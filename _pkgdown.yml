@@ -3,7 +3,7 @@ url: http://usethis.r-lib.org
 navbar:
   type: default
   left:
-  - text: Home
+  - icon: fa-home fa-lg
     href: index.html
   - text: Setup
     href: articles/articles/usethis-setup.html
