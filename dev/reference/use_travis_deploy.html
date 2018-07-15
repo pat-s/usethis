@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Continuous integration setup and badges — use_ci • usethis</title>
+<title>Setup deployment for Travis CI — use_travis_deploy • usethis</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,15 +30,15 @@
 
 
 
-<meta property="og:title" content="Continuous integration setup and badges — use_ci" />
+<meta property="og:title" content="Setup deployment for Travis CI — use_travis_deploy" />
 
-<meta property="og:description" content="Sets up continuous integration (CI) services for an R package that is
-developed on GitHub with CI-agnostic support by tic.
-CI services can run R CMD check automatically on
-various platforms, triggered by each push or pull request. This function
-Adds service-specific configuration files and adds them to .Rbuildignore.
-Activates a service or gives the user a detailed prompt.
-" />
+<meta property="og:description" content="Creates a public-private key pair,
+adds the public key to the GitHub repository via github_add_key(),
+and stores the private key as an encrypted environment variable in Travis CI
+via travis_set_var(),
+possibly in a different repository.
+The tic companion package contains facilities for installing such a key
+during a Travis CI build." />
 <meta name="twitter:card" content="summary" />
 
 <meta name="robots" content="noindex">
@@ -123,26 +123,25 @@ Activates a service or gives the user a detailed prompt.
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Continuous integration setup and badges</h1>
+    <h1>Setup deployment for Travis CI</h1>
     <small class="dont-index">Source: <a href='https://github.com/r-lib/usethis/blob/master/R/ci.R'><code>R/ci.R</code></a></small>
-    <div class="hidden name"><code>ci.Rd</code></div>
+    <div class="hidden name"><code>use_travis_deploy.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Sets up continuous integration (CI) services for an R package that is
-developed on GitHub with CI-agnostic support by <span class="pkg">tic</span>.
-CI services can run <code>R CMD check</code> automatically on
-various platforms, triggered by each push or pull request. This function</p><ul>
-<li><p>Adds service-specific configuration files and adds them to <code>.Rbuildignore</code>.</p></li>
-<li><p>Activates a service or gives the user a detailed prompt.<br /></p></li>
-</ul>
+    <p>Creates a public-private key pair,
+adds the public key to the GitHub repository via <code>github_add_key()</code>,
+and stores the private key as an encrypted environment variable in Travis CI
+via <code>travis_set_var()</code>,
+possibly in a different repository.
+The <span class="pkg">tic</span> companion package contains facilities for installing such a key
+during a Travis CI build.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>use_ci</span>(<span class='kw'>path</span> <span class='kw'>=</span> <span class='st'>"."</span>, <span class='kw'>quiet</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>services</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"Travis"</span>, <span class='st'>"Appveyor"</span>))
-
-<span class='fu'>use_tic</span>(<span class='no'>repo_type</span>)</pre>
+    <pre class="usage"><span class='fu'>use_travis_deploy</span>(<span class='kw'>path</span> <span class='kw'>=</span> <span class='st'>"."</span>, <span class='kw'>info</span> <span class='kw'>=</span> <span class='kw pkg'>travis</span><span class='kw ns'>:::</span><span class='fu'><a href='http://www.rdocumentation.org/packages/travis/topics/github_info'>github_info</a></span>(<span class='no'>path</span>),
+  <span class='kw'>repo</span> <span class='kw'>=</span> <span class='kw pkg'>travis</span><span class='kw ns'>:::</span><span class='fu'><a href='http://www.rdocumentation.org/packages/travis/topics/github_info'>github_repo</a></span>(<span class='kw'>info</span> <span class='kw'>=</span> <span class='no'>info</span>), <span class='kw'>travis_repo</span> <span class='kw'>=</span> <span class='no'>repo</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -150,48 +149,27 @@ various platforms, triggered by each push or pull request. This function</p><ul>
     <tr>
       <th>path</th>
       <td><p><code>[string]</code><br />
-The path to the repo to prepare.</p></td>
+The path to a GitHub-enabled Git repository (or a subdirectory thereof).</p></td>
     </tr>
     <tr>
-      <th>quiet</th>
-      <td><p><code>[flag]</code><br />
-Less verbose output? Default: <code>FALSE</code>.</p></td>
+      <th>info</th>
+      <td><p><code>[list]</code><br />
+GitHub information for the repository, by default obtained through
+<code>github_info()</code>.</p></td>
     </tr>
     <tr>
-      <th>services</th>
-      <td><p><code>[character]</code><br />
-CI services to add.</p></td>
+      <th>repo</th>
+      <td><p><code>[string|numeric]</code><br />
+The GitHub repo slug, by default obtained through <code>github_repo()</code>.
+Alternatively, the Travis CI repo ID, e.g. obtained through <code>travis_repo_id()</code>.</p></td>
     </tr>
     <tr>
-      <th>repo_type</th>
-      <td><p>The kind of project for which a tic.R file should be created.
-This is automatically guessed when using use_ci. Valid values are <code>blogdown</code>,
-<code>bookdown</code>, <code>package</code> and <code>site</code>.</p></td>
+      <th>travis_repo</th>
+      <td><p><code>[string]</code><br />
+The Travis CI repository to add the private key to, default: <code>repo</code>
+(the GitHub repo to which the public deploy key is added).</p></td>
     </tr>
     </table>
-    
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
-    <p>By default the CI-services "Travis" (Linux) and "Appveyor"
-(Windows) are used. Basic <code>.travis.yml</code> and <code>appveyor.yml</code> files are added
-to the top-level directory of a package.</p>
-<p>The following steps will be run:</p><ol>
-<li><p>If necessary, create a GitHub repository via <code><a href='use_github.html'>use_github()</a></code></p></li>
-<li><p>Enable Travis via <code>travis_enable()</code></p></li>
-<li><p>Create a default <code>.travis.yml</code> file
-(overwrite after confirmation in interactive mode only)</p></li>
-<li><p>Create a default <code>appveyor.yml</code> file
-(depending on repo type, overwrite after confirmation
-in interactive mode only)</p></li>
-<li><p>Create a default <code>tic.R</code> file depending on the repo type
-(package, website, bookdown, ...)</p></li>
-<li><p>Enable deployment (if necessary, depending on repo type)
-via <code><a href='use_travis_deploy.html'>use_travis_deploy()</a></code></p></li>
-<li><p>Create a GitHub PAT and install it on Travis CI via <code>travis_set_pat()</code></p></li>
-</ol>
-    <p>This function is aimed at supporting the most common use cases.
-Users who require more control are advised to manually call the individual
-functions.</p>
     
 
   </div>
@@ -199,9 +177,7 @@ functions.</p>
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-      
-      <li><a href="#details">Details</a></li>
-          </ul>
+                </ul>
 
   </div>
 </div>
