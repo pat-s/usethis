@@ -1,8 +1,12 @@
 # usethis (development version)
 
+* `pr_push()` works with gh v1.1.0 (and earlier versions), for a repository with no open pull requests (#990, @maurolepore).
+
 * New `use_github_actions()`, `use_github_action_check_release()`, `use_github_action_check_full()`,
   `use_github_action_pr_commands()`, `use_github_actions_tidy()` to set up a GitHub Actions
   for a package (@jimhester).
+
+* Fix `use_logo()` README href if pkgdown `url` is set. (#986, @mitchelloharawild).
 
 * usethis now outputs with message conditions. (@jimhester)
 
