@@ -22,31 +22,32 @@ use_github_action <- function(name,
                               ignore = TRUE,
                               open = FALSE) {
 
-  # Append a `.yaml` extension if needed
-  stopifnot(is_string(name))
-
-  if (!grepl("[.]yaml$", name)) {
-    name <- paste0(name, ".yaml")
-  }
-
+  # Check if a custom URL is being used.
   if (is.null(url)) {
+    stopifnot(is_string(name))
+
+    # Append a `.yaml` extension if needed
+    if (!grepl("[.]yaml$", name)) {
+      name <- paste0(name, ".yaml")
+    }
+
     url <- glue("https://raw.githubusercontent.com/r-lib/actions/master/examples/{name}")
+  } else {
+    stopifnot(is_string(url))
   }
 
   if (is.null(save_as)) {
     save_as <- basename(url)
   }
 
-  contents <- readLines(url)
+  contents <- read_utf8(url)
+
+  use_dot_github(ignore = ignore)
 
   save_as <- path(".github", "workflows", save_as)
-
   create_directory(dirname(proj_path(save_as)))
-  new <- write_over(proj_path(save_as), contents)
 
-  if (ignore) {
-    use_build_ignore(save_as)
-  }
+  new <- write_over(proj_path(save_as), contents)
 
   if (open && new) {
     edit_file(proj_path(save_as))
@@ -62,6 +63,20 @@ use_github_action <- function(name,
 #' @export
 use_github_action_check_release <- function(save_as = "R-CMD-check.yaml", ignore = TRUE, open = FALSE) {
   use_github_action("check-release.yaml", save_as = save_as, ignore = ignore, open = open)
+
+  use_github_actions_badge("R-CMD-check")
+}
+
+#' @section `use_github_action_check_standard()`:
+#' This action runs R CMD check
+#'   via the [rcmdcheck](https://github.com/r-lib/rcmdcheck) package on the
+#'   three major OSs (linux, macOS and Windows) on the release version of R and
+#'   R-devel. This action is most appropriate when you plan to eventually
+#'   submit your package to CRAN or Bioconductor.
+#' @rdname use_github_action
+#' @export
+use_github_action_check_standard <- function(save_as = "R-CMD-check.yaml", ignore = TRUE, open = FALSE) {
+  use_github_action("check-standard.yaml", save_as = save_as, ignore = ignore, open = open)
 
   use_github_actions_badge("R-CMD-check")
 }

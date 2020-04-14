@@ -1,7 +1,7 @@
 context("GitHub Actions")
 
 test_that("uses_github_actions() reports usage of GitHub Actions", {
-  skip_if_no_git_config()
+  skip_if_no_git_user()
 
   scoped_temporary_package()
   expect_false(uses_github_actions())
@@ -22,7 +22,7 @@ test_that("check_uses_github_actions() can throw error", {
 })
 
 test_that("use_github_actions() configures GitHub Actions", {
-  skip_if_no_git_config()
+  skip_if_no_git_user()
 
   scoped_temporary_package()
   use_git()
@@ -47,12 +47,12 @@ test_that("use_github_actions() configures GitHub Actions", {
   )
 
   # Badge is correct
-  readme_lines <- readLines(proj_path("README.md"))
+  readme_lines <- read_utf8(proj_path("README.md"))
   expect_true(any(grepl("R-CMD-check", readme_lines)))
 })
 
 test_that("use_github_actions() configures .Rbuildignore", {
-  skip_if_no_git_config()
+  skip_if_no_git_user()
 
   scoped_temporary_package()
   expect_false(uses_circleci())
@@ -60,11 +60,11 @@ test_that("use_github_actions() configures .Rbuildignore", {
   use_git_remote(name = "origin", url = "https://github.com/fake/fake")
   use_description_field("URL", "https://github.com/fake/fake")
   use_github_actions()
-  expect_true(is_build_ignored("^\\.github/workflows"))
+  expect_true(is_build_ignored("^\\.github$"))
 })
 
 test_that("use_github_action_check_full() configures full GitHub Actions", {
-  skip_if_no_git_config()
+  skip_if_no_git_user()
 
   scoped_temporary_package()
   use_git()
@@ -92,12 +92,12 @@ test_that("use_github_action_check_full() configures full GitHub Actions", {
   expect_true(length(yml$jobs[[1]]$strategy$matrix) > 0)
 
   # Badge is correct
-  readme_lines <- readLines(proj_path("README.md"))
+  readme_lines <- read_utf8(proj_path("README.md"))
   expect_true(any(grepl("R-CMD-check", readme_lines)))
 })
 
 test_that("use_github_action_check_full() configures the pr commands", {
-  skip_if_no_git_config()
+  skip_if_no_git_user()
 
   scoped_temporary_package()
   use_git()
@@ -110,8 +110,8 @@ test_that("use_github_action_check_full() configures the pr commands", {
   expect_proj_file(".github/workflows/pr-commands.yaml")
 })
 
-test_that("use_github_actions_tidy() configures the full check and pr commands", {
-  skip_if_no_git_config()
+test_that("use_tidy_github_actions() configures the full check and pr commands", {
+  skip_if_no_git_user()
 
   scoped_temporary_package()
   use_git()
@@ -119,9 +119,8 @@ test_that("use_github_actions_tidy() configures the full check and pr commands",
   use_description_field("URL", "https://github.com/fake/fake")
   use_readme_md()
 
-  use_github_actions_tidy()
-  expect_proj_dir(".github")
-  expect_proj_dir(".github/workflows")
+  use_tidy_github_actions()
   expect_proj_file(".github/workflows/R-CMD-check.yaml")
   expect_proj_file(".github/workflows/pr-commands.yaml")
+  expect_proj_file(".github/workflows/pkgdown.yaml")
 })

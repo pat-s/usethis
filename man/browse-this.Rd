@@ -8,7 +8,6 @@
 \alias{browse_travis}
 \alias{browse_circleci}
 \alias{browse_cran}
-\alias{browse_active_file}
 \title{Quickly browse to important package webpages}
 \usage{
 browse_github(package = NULL)
@@ -17,13 +16,11 @@ browse_github_issues(package = NULL, number = NULL)
 
 browse_github_pulls(package = NULL, number = NULL)
 
-browse_travis(package = NULL, ext = c("org", "com"))
+browse_travis(package = NULL, ext = c("com", "org"))
 
 browse_circleci(package = NULL)
 
 browse_cran(package = NULL)
-
-browse_active_file(branch = NULL)
 }
 \arguments{
 \item{package}{Name of package; leave as \code{NULL} to use current package}
@@ -32,8 +29,6 @@ browse_active_file(branch = NULL)
 \code{"new"}.}
 
 \item{ext}{Version of travis to use.}
-
-\item{branch}{Which branch to use. Defaults to "master" branch.}
 }
 \description{
 These functions take you to various webpages associated with a package and
@@ -48,10 +43,9 @@ and there is no guarantee there will be content at the destination.
 issue.
 \item \code{browse_github_pulls()}: Visits the GitHub Pull Request index or one
 specific pull request.
-\item \code{browse_travis()}: Visits the package's page on \href{https://travis-ci.org}{Travis CI}.
+\item \code{browse_travis()}: Visits the package's page on \href{https://travis-ci.com}{Travis CI}.
 \item \code{browse_circleci()}: Visits the package's page on \href{https://circleci.com}{Circle CI}
 \item \code{browse_cran()}: Visits the package on CRAN, via the canonical URL.
-\item \code{browse_active_file()}: Open the active file on Github.
 }
 }
 \examples{
@@ -62,7 +56,4 @@ browse_github_pulls("rprojroot")
 browse_github_pulls("rprojroot", 3)
 browse_travis("usethis")
 browse_cran("MASS")
-\dontrun{
-  browse_active_file()
-}
 }
