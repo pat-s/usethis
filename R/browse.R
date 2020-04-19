@@ -80,6 +80,16 @@ browse_cran <- function(package = NULL) {
   view_url(cran_home(package))
 }
 
+#' @export
+#' @rdname browse-this
+browse_news <- function(package = NULL) {
+  url = paste0(cran_home(package), "/NEWS")
+  if (httr::status_code(httr::GET(url)) == 404) {
+    url = paste0(cran_home(package), "/news/news.html")
+  }
+  view_url(url)
+}
+
 github_url_rx <- function() {
   paste0(
     "^",

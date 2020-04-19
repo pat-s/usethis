@@ -9,6 +9,7 @@
 \alias{browse_travis}
 \alias{browse_circleci}
 \alias{browse_cran}
+\alias{browse_news}
 \title{Quickly browse to important package webpages}
 \usage{
 browse_github(package = NULL)
@@ -24,6 +25,8 @@ browse_travis(package = NULL, ext = c("com", "org"))
 browse_circleci(package = NULL)
 
 browse_cran(package = NULL)
+
+browse_news(package = NULL)
 }
 \arguments{
 \item{package}{Name of package; leave as \code{NULL} to use current package}
