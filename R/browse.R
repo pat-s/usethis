@@ -83,9 +83,21 @@ browse_cran <- function(package = NULL) {
 #' @export
 #' @rdname browse-this
 browse_news <- function(package = NULL) {
-  url = paste0(cran_home(package), "/NEWS")
+
+  # check for pkgdown url
+  field_url <- desc::desc_get_urls(file = system.file("DESCRIPTION", package = package))[1]
+  # check if a news site exists for the given url
+  has_pkgdown <- httr::status_code(httr::GET(paste0(field_url, "/news"))) == 200
+  if (has_pkgdown) {
+    view_url((paste0(field_url, "/news")))
+    return(invisible())
+  }
+
+  # check for plain NEWS file
+  url <- paste0(cran_home(package), "/NEWS")
   if (httr::status_code(httr::GET(url)) == 404) {
-    url = paste0(cran_home(package), "/news/news.html")
+    # try HTML NEWS file as last option
+    url <- paste0(cran_home(package), "/news/news.html")
   }
   view_url(url)
 }
