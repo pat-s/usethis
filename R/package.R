@@ -1,9 +1,9 @@
 #' Depend on another package
 #'
 #' `use_package()` adds a CRAN package dependency to `DESCRIPTION` and offers a
-#' little advice about how to best use it. `use_dev_package()` adds a versioned
-#' dependency on an in-development GitHub package, adding the repo to `Remotes`
-#' so it will be automatically installed from the correct location.
+#' little advice about how to best use it. `use_dev_package()` adds a
+#' dependency on an in-development package, adding the dev repo to `Remotes` so
+#' it will be automatically installed from the correct location.
 #'
 #' @param package Name of package to depend on.
 #' @param type Type of dependency: must be one of "Imports", "Depends",
@@ -11,9 +11,16 @@
 #'   is case insensitive.
 #' @param min_version Optionally, supply a minimum version for the package.
 #'   Set to `TRUE` to use the currently installed version.
+#' @param remote By default, an `OWNER/REPO` GitHub remote is inserted.
+#'   Optionally, you can supply a character string to specify the remote, e.g.
+#'   `"gitlab::jimhester/covr"`, using any syntax supported by the [remotes
+#'   package](
+#'   https://remotes.r-lib.org/articles/dependencies.html#other-sources).
+#'
 #' @seealso The [dependencies
 #'   section](https://r-pkgs.org/description.html#dependencies) of [R
 #'   Packages](https://r-pkgs.org).
+#'
 #' @export
 #' @examples
 #' \dontrun{
@@ -23,7 +30,7 @@
 #' }
 use_package <- function(package, type = "Imports", min_version = NULL) {
   if (type == "Imports") {
-    refuse_package(package, verboten = "tidyverse")
+    refuse_package(package, verboten = c("tidyverse", "tidymodels"))
   }
 
   use_dependency(package, type, min_version = min_version)
@@ -34,26 +41,26 @@ use_package <- function(package, type = "Imports", min_version = NULL) {
 
 #' @export
 #' @rdname use_package
-use_dev_package <- function(package, type = "Imports") {
-  refuse_package(package, verboten = "tidyverse")
+use_dev_package <- function(package, type = "Imports", remote = NULL) {
+  refuse_package(package, verboten = c("tidyverse", "tidymodels"))
 
   use_dependency(package, type = type, min_version = TRUE)
-  use_remote(package)
+  use_remote(package, remote)
   how_to_use(package, type)
 
   invisible()
 }
 
-use_remote <- function(package) {
+use_remote <- function(package, package_remote = NULL) {
   remotes <- desc::desc_get_remotes(proj_get())
   if (any(grepl(package, remotes))) {
     return(invisible())
   }
 
-  package_remote <- package_remote(desc::desc(package = package))
-  ui_done(
-    "Adding {ui_value(package_remote)} to {ui_field('Remotes')} field in DESCRIPTION"
-  )
+  package_remote <- package_remote %||% package_remote(package)
+  ui_done("
+    Adding {ui_value(package_remote)} to {ui_field('Remotes')} field in \\
+    DESCRIPTION")
   remotes <- c(remotes, package_remote)
   desc::desc_set_remotes(remotes, file = proj_get())
   invisible()
@@ -61,25 +68,39 @@ use_remote <- function(package) {
 
 # Helpers -----------------------------------------------------------------
 
-package_remote <- function(desc) {
-  package <- desc$get_field("Package")
+package_remote <- function(package) {
+  desc <- desc::desc(package = package)
   remote <- as.list(desc$get(c("RemoteType", "RemoteUsername", "RemoteRepo")))
 
-  is_valid_remote <- all(purrr::map_lgl(remote, ~ is_string(.x) && !is.na(.x)))
-  if (!is_valid_remote) {
-    ui_stop("{ui_value(package)} was not installed from a supported remote.")
+  is_recognized_remote <- all(purrr::map_lgl(remote, ~ is_string(.x) && !is.na(.x)))
+
+  if (is_recognized_remote) {
+    # non-GitHub remotes get a 'RemoteType::' prefix
+    if (!identical(remote$RemoteType, "github")) {
+      remote$RemoteUsername <- paste0(remote$RemoteType, "::", remote$RemoteUsername)
+    }
+    return(paste0(remote$RemoteUsername, "/", remote$RemoteRepo))
   }
 
-  # GitHub remotes don't get the 'RemoteType::' prefix
-  if (identical(remote$RemoteType, "github")) {
-    paste0(remote$RemoteUsername, "/", remote$RemoteRepo)
+  remote <- github_remote_from_description(desc)
+  if (is.null(remote)) {
+    ui_stop("Cannot determine remote for {ui_value(package)}")
+  }
+
+  remote <- paste0(remote$repo_owner, "/", remote$repo_name)
+  if (ui_yeah("
+    {ui_value(package)} was either installed from CRAN or local source.
+    Based on DESCRIPTION, we propose the remote: {ui_value(remote)}
+    Is this OK?
+  ")) {
+    remote
   } else {
-    paste0(remote$RemoteType, "::", remote$RemoteUsername, "/", remote$RemoteRepo)
+    ui_stop("Cannot determine remote for {ui_value(package)}")
   }
 }
 
 refuse_package <- function(package, verboten) {
-  if (identical(package, verboten)) {
+  if (package %in% verboten) {
     code <- glue("use_package(\"{package}\", type = \"depends\")")
     ui_stop(
       "{ui_value(package)} is a meta-package and it is rarely a good idea to \\

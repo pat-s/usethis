@@ -114,7 +114,7 @@ with_project <- function(path = ".",
   on.exit({
     proj_set(path = old_proj, force = TRUE)
     options(old_quiet)
-  })
+  }, add = TRUE)
 
   force(code)
 }
@@ -237,10 +237,11 @@ project_data <- function(base_path = proj_get()) {
   } else {
     data <- list(Project = path_file(base_path))
   }
-  if (proj_active() && uses_github()) {
-    data$github_owner <- github_owner()
-    data$github_repo  <- github_repo()
-    data$github_spec  <- github_repo_spec()
+  if (proj_active() && origin_is_on_github()) {
+    origin <- github_remotes("origin", github_get = FALSE)
+    data$github_owner <- origin$repo_owner
+    data$github_repo  <- origin$repo_name
+    data$github_spec  <- glue("{origin$repo_owner}/{origin$repo_name}")
   }
   data
 }
@@ -264,27 +265,6 @@ project_name <- function(base_path = proj_get()) {
   } else {
     project_data(base_path)$Project
   }
-}
-
-project_pkgdown <- function(base_path = proj_get()) {
-  path <- path_first_existing(
-    base_path,
-    c(
-      "_pkgdown.yml",
-      "_pkgdown.yaml",
-      "pkgdown/_pkgdown.yml",
-      "inst/_pkgdown.yml"
-    )
-  )
-  if (is.null(path)) {
-    NULL
-  } else {
-    yaml::read_yaml(path)
-  }
-}
-
-project_pkgdown_url <- function(base_path = proj_get()) {
-  project_pkgdown(base_path)$url
 }
 
 #' Activate a project

@@ -16,20 +16,21 @@
 #' edit_file("~/.gitconfig")
 #' }
 edit_file <- function(path, open = rlang::is_interactive()) {
+  open <- open && is_interactive()
   path <- user_path_prep(path)
   create_directory(path_dir(path))
   file_create(path)
 
-  if (open) {
-    ui_todo("Modify {ui_path(path)}")
-
-    if (rstudioapi::isAvailable() && rstudioapi::hasFun("navigateToFile")) {
-      rstudioapi::navigateToFile(path)
-    } else {
-      utils::file.edit(path)
-    }
-  } else {
+  if (!open) {
     ui_todo("Edit {ui_path(path)}")
+    return(invisible(path))
+  }
+
+  ui_todo("Modify {ui_path(path)}")
+  if (rstudioapi::isAvailable() && rstudioapi::hasFun("navigateToFile")) {
+    rstudioapi::navigateToFile(path)
+  } else {
+    utils::file.edit(path)
   }
   invisible(path)
 }
@@ -159,7 +160,7 @@ edit_git_ignore <- function(scope = c("user", "project")) {
     ui_done("Setting up new global gitignore: {ui_path(file)}")
     # Describe relative to home directory
     path <- path("~", path_rel(file, path_home()))
-    git_config_set("core.excludesfile", path, global = TRUE)
+    gert::git_config_global_set("core.excludesfile", path)
     git_vaccinate()
   }
   invisible(edit_file(file))
