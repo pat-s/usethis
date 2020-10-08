@@ -69,6 +69,10 @@ indent <- function(x, first = "  ", indent = first) {
   paste0(first, x)
 }
 
+isFALSE = function(x) {
+  identical(x, FALSE)
+}
+
 isNA <- function(x) {
   length(x) == 1 && is.na(x)
 }
@@ -86,4 +90,18 @@ path_first_existing <- function(...) {
 
 is_online <- function(host) {
   !is.null(curl::nslookup(host, error = FALSE))
+}
+
+year <- function() format(Sys.Date(), "%Y")
+
+pluck_lgl <- function(.x, ...) {
+  as_logical(purrr::pluck(.x, ..., .default = NA))
+}
+
+pluck_chr <- function(.x, ...) {
+  as_character(purrr::pluck(.x, ..., .default = NA))
+}
+
+pluck_int <- function(.x, ...) {
+  as_integer(purrr::pluck(.x, ..., .default = NA))
 }

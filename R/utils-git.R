@@ -86,7 +86,7 @@ git_ask_commit <- function(message, untracked, paths = NULL) {
   }
 
   paths <- sort(paths)
-  ui_paths <- purrr::map_chr(paths, ui_path)
+  ui_paths <- map_chr(paths, ui_path)
   if (n > 20) {
     ui_paths <- c(ui_paths[1:20], "...")
   }
@@ -136,7 +136,7 @@ git_conflict_report <- function() {
     return(invisible())
   }
 
-  conflicted_paths <- purrr::map_chr(conflicted, ui_path)
+  conflicted_paths <- map_chr(conflicted, ui_path)
   ui_line(c(
     "There are {n} conflicted files:",
     paste0("* ", conflicted_paths)
@@ -191,7 +191,7 @@ git_pull <- function(remref = NULL, verbose = TRUE) {
     remote = remref_remote(remref),
     refspec = remref_branch(branch),
     repo = repo,
-    verbose = FALSE
+    verbose = verbose
   )
   gert::git_merge(remref, repo = repo)
   st <- git_status(untracked = TRUE)
@@ -233,18 +233,35 @@ git_branch_compare <- function(branch = git_branch(), remref = NULL) {
     verbose = FALSE
   )
   out <- gert::git_ahead_behind(upstream = remref, ref = branch, repo = git_repo())
-  stats::setNames(out, nm = c("local_only", "remote_only"))
+  list(local_only = out$ahead, remote_only = out$behind)
 }
 
 # Checks ------------------------------------------------------------------
-check_branch <- function(branch) {
-  ui_done("Checking that current branch is {ui_value(branch)}")
+check_default_branch <- function() {
+  default_branch <- git_branch_default()
+  ui_done("
+    Checking that current branch is default branch ({ui_value(default_branch)})")
   actual <- git_branch()
-  if (actual == branch) {
+  if (actual == default_branch) {
     return(invisible())
   }
   ui_stop("
-    Must be on branch {ui_value(branch)}, not {ui_value(actual)}.")
+    Must be on branch {ui_value(default_branch)}, not {ui_value(actual)}.")
+}
+
+challenge_non_default_branch <- function(details = "Are you sure you want to proceed?") {
+  actual <- git_branch()
+  default_branch <- git_branch_default()
+  if (nzchar(details)) {
+    details <- paste0("\n", details)
+  }
+  if (actual != default_branch) {
+    if (ui_nope("
+      Current branch ({ui_value(actual)}) is not repo's default \\
+      branch ({ui_value(default_branch)}){details}")) {
+      ui_stop("Aborting")
+    }
+  }
 }
 
 # examples of remref: upstream/master, origin/foofy
