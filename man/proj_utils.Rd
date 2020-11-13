@@ -15,12 +15,21 @@ proj_set(path = ".", force = FALSE)
 
 proj_path(..., ext = "")
 
-with_project(path = ".", code, force = FALSE,
-  quiet = getOption("usethis.quiet", default = FALSE))
+with_project(
+  path = ".",
+  code,
+  force = FALSE,
+  setwd = TRUE,
+  quiet = getOption("usethis.quiet", default = FALSE)
+)
 
-local_project(path = ".", force = FALSE,
+local_project(
+  path = ".",
+  force = FALSE,
+  setwd = TRUE,
   quiet = getOption("usethis.quiet", default = FALSE),
-  .local_envir = parent.frame())
+  .local_envir = parent.frame()
+)
 }
 \arguments{
 \item{path}{Path to set. This \code{path} should exist or be \code{NULL}.}
@@ -32,20 +41,24 @@ project-signalling infrastructure, such as initialising a Git repo or
 adding a \code{DESCRIPTION} file.}
 
 \item{...}{character vectors, if any values are NA, the result will also be
-NA.}
+NA. The paths follow the recycling rules used in the tibble package,
+namely that only length 1 arguments are recycled.}
 
 \item{ext}{An optional extension to append to the generated path.}
 
-\item{code}{Code to run with temporary active project.}
+\item{code}{Code to run with temporary active project}
+
+\item{setwd}{Whether to also temporarily set the working directory to the
+active project, if it is not \code{NULL}}
 
 \item{quiet}{Whether to suppress user-facing messages, while operating in the
-temporary active project.}
+temporary active project}
 
 \item{.local_envir}{The environment to use for scoping. Defaults to current
 execution environment.}
 }
 \description{
-Most \code{use_*()} functions act on the \strong{active project}. If it is
+Most \verb{use_*()} functions act on the \strong{active project}. If it is
 unset, usethis uses \href{https://rprojroot.r-lib.org}{rprojroot} to
 find the project root of the current working directory. It establishes the
 project root by looking for a \code{.here} file, an RStudio Project, a package
@@ -55,7 +68,7 @@ session.
 }
 \details{
 In general, end user scripts should not contain direct calls to
-\code{usethis::proj_*()} utility functions. They are internal functions that are
+\verb{usethis::proj_*()} utility functions. They are internal functions that are
 exported for occasional interactive use or use in packages that extend
 usethis. End user code should call functions in
 \href{https://rprojroot.r-lib.org}{rprojroot} or its simpler companion,
@@ -72,13 +85,14 @@ attempts to set it in the first place.
 \item \code{proj_path}: Builds a path within the active project returned by
 \code{proj_get()}. Thin wrapper around \code{\link[fs:path]{fs::path()}}.
 
-\item \code{with_project}: Runs code with a temporary active project. It is an
-example of the \code{with_*()} functions in \href{https://withr.r-lib.org}{withr}.
+\item \code{with_project}: Runs code with a temporary active project and,
+optionally, working directory. It is an example of the \verb{with_*()} functions
+in \href{https://withr.r-lib.org}{withr}.
 
-\item \code{local_project}: Sets an active project until the current execution
-environment goes out of scope, e.g. the end of the current function or
-test.  It is an example of the \code{local_*()} functions in
-\href{https://withr.r-lib.org}{withr}.
+\item \code{local_project}: Sets an active project and, optionally, working
+directory until the current execution environment goes out of scope, e.g.
+the end of the current function or test.  It is an example of the
+\verb{local_*()} functions in \href{https://withr.r-lib.org}{withr}.
 }}
 
 \examples{
@@ -101,6 +115,7 @@ with_project("path/to/some/other/project", print(proj_sitrep()))
 }
 }
 \seealso{
-Other project functions: \code{\link{proj_sitrep}}
+Other project functions: 
+\code{\link{proj_sitrep}()}
 }
 \concept{project functions}

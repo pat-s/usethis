@@ -17,7 +17,7 @@ use_bioc_badge()
 
 use_lifecycle_badge(stage)
 
-use_binder_badge(urlpath = NULL)
+use_binder_badge(ref = git_branch_default(), urlpath = NULL)
 }
 \arguments{
 \item{badge_name}{Badge name. Used in error message and alt text}
@@ -26,9 +26,11 @@ use_binder_badge(urlpath = NULL)
 
 \item{stage}{Stage of the package lifecycle}
 
-\item{urlpath}{An optional \code{urlpath} component to add to the link, e.g. \code{"rstudio"}
-to open an RStudio IDE instead of a Jupyter notebook.
-See the \href{https://mybinder.readthedocs.io/en/latest/howto/user_interface.html}{binder documentation}
+\item{ref}{A Git branch, tag, or SHA}
+
+\item{urlpath}{An optional \code{urlpath} component to add to the link, e.g.
+\code{"rstudio"} to open an RStudio IDE instead of a Jupyter notebook. See the
+\href{https://mybinder.readthedocs.io/en/latest/howto/user_interface.html}{binder documentation}
 for additional examples.}
 }
 \description{
@@ -36,8 +38,8 @@ These helpers produce the markdown text you need in your README to include
 badges that report information, such as the CRAN version or test coverage,
 and link out to relevant external resources. To add badges automatically
 ensure your badge block starts with a line containing only
-\code{<!-- badges: start -->} and ends with a line containing only
-\code{<!-- badges: end -->}.
+\verb{<!-- badges: start -->} and ends with a line containing only
+\verb{<!-- badges: end -->}.
 }
 \details{
 \itemize{
@@ -46,15 +48,17 @@ ensure your badge block starts with a line containing only
 \item \code{use_cran_badge()}: badge indicates what version of your package is
 available on CRAN, powered by \url{https://www.r-pkg.org}
 \item \code{use_lifecycle_badge()}: badge declares the developmental stage of a
-package, according to \url{https://www.tidyverse.org/lifecycle/}:
+package (or argument or function) according to
+\url{https://lifecycle.r-lib.org/articles/lifecycle.html}:
 \itemize{
 \item Experimental
 \item Maturing
 \item Stable
-\item Retired
-\item Archived
-\item Dormant
 \item Questioning
+\item Superseded
+\item Soft-deprecated (function or argument)
+\item Deprecated (function or argument)
+\item Defunct (function or argument)
 }
 \item \code{use_binder_badge()}: badge indicates that your repository can be launched
 in an executable environment on \url{https://mybinder.org/}
@@ -67,5 +71,6 @@ use_lifecycle_badge("stable")
 }
 }
 \seealso{
-The \link[=use_travis]{functions that set up continuous integration services} also create badges.
+Functions that configure continuous integration, such as
+\code{\link[=use_github_actions]{use_github_actions()}}, also create badges.
 }

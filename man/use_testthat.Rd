@@ -4,10 +4,18 @@
 \alias{use_testthat}
 \title{Sets up overall testing infrastructure}
 \usage{
-use_testthat()
+use_testthat(edition = NULL, parallel = FALSE)
+}
+\arguments{
+\item{edition}{testthat edition to use. Defaults to the latest edition, i.e.
+the major version number of the currently installed testthat.}
+
+\item{parallel}{Should tests be run in parallel? This feature appeared in
+testthat 3.0.0; see \url{https://testthat.r-lib.org/articles/parallel.html} for
+details and caveats.}
 }
 \description{
-Creates \code{tests/testthat/}, \code{tests/testthat.R}, and adds the testthat package
+Creates \verb{tests/testthat/}, \code{tests/testthat.R}, and adds the testthat package
 to the Suggests field. Learn more in \url{https://r-pkgs.org/tests.html}
 }
 \examples{

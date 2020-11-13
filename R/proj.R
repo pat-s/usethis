@@ -98,51 +98,59 @@ proj_path <- function(..., ext = "") {
   path_norm(path(proj_get(), ..., ext = ext))
 }
 
-#' @describeIn proj_utils Runs code with a temporary active project. It is an
-#'   example of the `with_*()` functions in [withr](https://withr.r-lib.org).
-#' @param code Code to run with temporary active project.
+#' @describeIn proj_utils Runs code with a temporary active project and,
+#'   optionally, working directory. It is an example of the `with_*()` functions
+#'   in [withr](https://withr.r-lib.org).
+#' @param code Code to run with temporary active project
+#' @param setwd Whether to also temporarily set the working directory to the
+#'   active project, if it is not `NULL`
 #' @param quiet Whether to suppress user-facing messages, while operating in the
-#'   temporary active project.
+#'   temporary active project
 #' @export
 with_project <- function(path = ".",
                          code,
                          force = FALSE,
+                         setwd = TRUE,
                          quiet = getOption("usethis.quiet", default = FALSE)) {
-  old_quiet <- options(usethis.quiet = quiet)
-  old_proj  <- proj_set(path = path, force = force)
-
-  on.exit({
-    proj_set(path = old_proj, force = TRUE)
-    options(old_quiet)
-  })
-
+  local_project(path = path, force = force, setwd = setwd, quiet = quiet)
   force(code)
 }
 
-#' @describeIn proj_utils Sets an active project until the current execution
-#'   environment goes out of scope, e.g. the end of the current function or
-#'   test.  It is an example of the `local_*()` functions in
-#'   [withr](https://withr.r-lib.org).
+#' @describeIn proj_utils Sets an active project and, optionally, working
+#'   directory until the current execution environment goes out of scope, e.g.
+#'   the end of the current function or test.  It is an example of the
+#'   `local_*()` functions in [withr](https://withr.r-lib.org).
 #' @param .local_envir The environment to use for scoping. Defaults to current
 #'   execution environment.
 #' @export
 local_project <- function(path = ".",
                           force = FALSE,
+                          setwd = TRUE,
                           quiet = getOption("usethis.quiet", default = FALSE),
                           .local_envir = parent.frame()) {
-  old_quiet <- options(usethis.quiet = quiet)
-  old_proj  <- proj_set(path = path, force = force)
+  withr::local_options(usethis.quiet = quiet)
 
-  withr::defer({
-    proj_set(path = old_proj, force = TRUE)
-    options(old_quiet)
-  }, envir = .local_envir)
+  old_project <- proj_get_() # this could be `NULL`, i.e. no active project
+  withr::defer(proj_set(path = old_project, force = TRUE), envir = .local_envir)
+  proj_set(path = path, force = force)
+  temp_proj <- proj_get_()   # this could be `NULL`
+
+  if (isTRUE(setwd) && !is.null(temp_proj)) {
+    withr::local_dir(temp_proj, .local_envir = .local_envir)
+  }
 }
 
 ## usethis policy re: preparation of the path to active project
 proj_path_prep <- function(path) {
-  if (is.null(path)) return(path)
-  path_real(path)
+  if (is.null(path)) {
+    return(path)
+  }
+  path <- path_abs(path)
+  if (file_exists(path)) {
+    path_real(path)
+  } else {
+    path
+  }
 }
 
 ## usethis policy re: preparation of user-provided path to a resource on user's
@@ -227,10 +235,11 @@ project_data <- function(base_path = proj_get()) {
   } else {
     data <- list(Project = path_file(base_path))
   }
-  if (proj_active() && uses_github()) {
-    data$github_owner <- github_owner()
-    data$github_repo  <- github_repo()
-    data$github_spec  <- github_repo_spec()
+  if (proj_active() && origin_is_on_github()) {
+    origin <- github_remote_list("origin")
+    data$github_owner <- origin$repo_owner
+    data$github_repo  <- origin$repo_name
+    data$github_spec  <- glue("{origin$repo_owner}/{origin$repo_name}")
   }
   data
 }
@@ -274,11 +283,12 @@ proj_activate <- function(path) {
     rstudioapi::openProject(path, newSession = TRUE)
     invisible(FALSE)
   } else {
-    if (user_path_prep(getwd()) != path) {
-      ui_done("Changing working directory to {ui_path(path, base = NA)}")
-      setwd(path)
-    }
     proj_set(path)
+    rel_path <- path_rel(proj_get(), path_wd())
+    if (rel_path != ".") {
+      ui_done("Changing working directory to {ui_path(path, base = NA)}")
+      setwd(proj_get())
+    }
     invisible(TRUE)
   }
 }

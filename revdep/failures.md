@@ -1,44 +1,101 @@
-# portalr
+# butcher
 
 <details>
 
-* Version: 0.2.5
-* Source code: https://github.com/cran/portalr
-* URL: https://weecology.github.io/portalr/, https://github.com/weecology/portalr
-* BugReports: https://github.com/weecology/portalr/issues
-* Date/Publication: 2019-06-22 04:40:04 UTC
-* Number of recursive dependencies: 127
+* Version: 0.1.2
+* Source code: https://github.com/cran/butcher
+* URL: https://tidymodels.github.io/butcher, https://github.com/tidymodels/butcher
+* BugReports: https://github.com/tidymodels/butcher/issues
+* Date/Publication: 2020-01-23 22:40:02 UTC
+* Number of recursive dependencies: 180
 
-Run `revdep_details(,"portalr")` for more info
+Run `revdep_details(,"butcher")` for more info
+
+</details>
+
+## Error before installation
+
+### Devel
+
+```
+* using log directory ‘/tmp/workdir/butcher/new/butcher.Rcheck’
+* using R version 3.6.3 (2020-02-29)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-manual --no-build-vignettes’
+* checking for file ‘butcher/DESCRIPTION’ ... OK
+* this is package ‘butcher’ version ‘0.1.2’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... ERROR
+Package suggested but not available: ‘NMF’
+
+The suggested packages are required for a complete check.
+Checking can be attempted without them by setting the environment
+variable _R_CHECK_FORCE_SUGGESTS_ to a false value.
+
+See section ‘The DESCRIPTION file’ in the ‘Writing R Extensions’
+manual.
+* DONE
+Status: 1 ERROR
+
+
+
+
+
+
+```
+### CRAN
+
+```
+* using log directory ‘/tmp/workdir/butcher/old/butcher.Rcheck’
+* using R version 3.6.3 (2020-02-29)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-manual --no-build-vignettes’
+* checking for file ‘butcher/DESCRIPTION’ ... OK
+* this is package ‘butcher’ version ‘0.1.2’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... ERROR
+Package suggested but not available: ‘NMF’
+
+The suggested packages are required for a complete check.
+Checking can be attempted without them by setting the environment
+variable _R_CHECK_FORCE_SUGGESTS_ to a false value.
+
+See section ‘The DESCRIPTION file’ in the ‘Writing R Extensions’
+manual.
+* DONE
+Status: 1 ERROR
+
+
+
+
+
+
+```
+# finbif
+
+<details>
+
+* Version: 0.3.0
+* Source code: https://github.com/cran/finbif
+* URL: https://github.com/luomus/finbif, https://luomus.github.io/finbif
+* BugReports: https://github.com/luomus/finbif/issues
+* Date/Publication: 2020-04-23 11:20:02 UTC
+* Number of recursive dependencies: 123
+
+Run `revdep_details(,"finbif")` for more info
 
 </details>
 
 ## In both
 
-*   R CMD check timed out
-    
-
-# POUMM
-
-<details>
-
-* Version: 2.1.5
-* Source code: https://github.com/cran/POUMM
-* URL: https://venelin.github.io/POUMM/index.html, https://github.com/venelin/POUMM
-* BugReports: https://github.com/venelin/POUMM/issues
-* Date/Publication: 2019-03-27 12:20:03 UTC
-* Number of recursive dependencies: 82
-
-Run `revdep_details(,"POUMM")` for more info
-
-</details>
-
-## In both
-
-*   checking whether package ‘POUMM’ can be installed ... ERROR
+*   checking whether package ‘finbif’ can be installed ... ERROR
     ```
     Installation failed.
-    See ‘/Users/jenny/rrr/usethis/revdep/checks.noindex/POUMM/new/POUMM.Rcheck/00install.out’ for details.
+    See ‘/tmp/workdir/finbif/new/finbif.Rcheck/00install.out’ for details.
     ```
 
 ## Installation
@@ -46,28 +103,54 @@ Run `revdep_details(,"POUMM")` for more info
 ### Devel
 
 ```
-* installing *source* package ‘POUMM’ ...
-** package ‘POUMM’ successfully unpacked and MD5 sums checked
+* installing *source* package ‘finbif’ ...
+** package ‘finbif’ successfully unpacked and MD5 sums checked
 ** using staged installation
-** libs
-clang++ -std=gnu++11 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG  -I"/Users/jenny/rrr/usethis/revdep/library.noindex/usethis/new/Rcpp/include" -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -I/usr/local/include -fopenmp  -fPIC  -Wall -g -O2  -c Rcpp.cpp -o Rcpp.o
-clang: error: unsupported option '-fopenmp'
-make: *** [Rcpp.o] Error 1
-ERROR: compilation failed for package ‘POUMM’
-* removing ‘/Users/jenny/rrr/usethis/revdep/checks.noindex/POUMM/new/POUMM.Rcheck/POUMM’
+** R
+** data
+*** moving datasets to lazyload DB
+** inst
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+*** copying figures
+** building package indices
+** installing vignettes
+** testing if installed package can be loaded from temporary location
+Error: package or namespace load failed for ‘finbif’:
+ .onLoad failed in loadNamespace() for 'finbif', details:
+  call: supported_langs[[l]]
+  error: subscript out of bounds
+Error: loading failed
+Execution halted
+ERROR: loading failed
+* removing ‘/tmp/workdir/finbif/new/finbif.Rcheck/finbif’
 
 ```
 ### CRAN
 
 ```
-* installing *source* package ‘POUMM’ ...
-** package ‘POUMM’ successfully unpacked and MD5 sums checked
+* installing *source* package ‘finbif’ ...
+** package ‘finbif’ successfully unpacked and MD5 sums checked
 ** using staged installation
-** libs
-clang++ -std=gnu++11 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG  -I"/Users/jenny/rrr/usethis/revdep/library.noindex/usethis/old/Rcpp/include" -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -I/usr/local/include -fopenmp  -fPIC  -Wall -g -O2  -c Rcpp.cpp -o Rcpp.o
-clang: error: unsupported option '-fopenmp'
-make: *** [Rcpp.o] Error 1
-ERROR: compilation failed for package ‘POUMM’
-* removing ‘/Users/jenny/rrr/usethis/revdep/checks.noindex/POUMM/old/POUMM.Rcheck/POUMM’
+** R
+** data
+*** moving datasets to lazyload DB
+** inst
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+*** copying figures
+** building package indices
+** installing vignettes
+** testing if installed package can be loaded from temporary location
+Error: package or namespace load failed for ‘finbif’:
+ .onLoad failed in loadNamespace() for 'finbif', details:
+  call: supported_langs[[l]]
+  error: subscript out of bounds
+Error: loading failed
+Execution halted
+ERROR: loading failed
+* removing ‘/tmp/workdir/finbif/old/finbif.Rcheck/finbif’
 
 ```

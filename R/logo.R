@@ -45,16 +45,15 @@ use_logo <- function(img, geometry = "240x278", retina = TRUE) {
 
   pkg <- project_name()
   if (retina) {
-    height <- height / 2
+    height <- round(height / 2)
   }
 
   ui_todo("Add logo to your README with the following html:")
-
-  pd_link <- pkgdown_link()
+  pd_link <- pkgdown_url(pedantic = TRUE)
   if (is.null(pd_link)) {
     ui_code_block("# {pkg} <img src={ui_path(logo_path)} align=\"right\" height=\"{height}\" />")
   } else {
-    ui_code_block("# {pkg} <a href={ui_path(pd_link, NA)}><img src={ui_path(logo_path)} align=\"right\" height=\"{height}\" /></a>")
+    ui_code_block("# {pkg} <a href={ui_value(pd_link)}><img src={ui_path(logo_path)} align=\"right\" height=\"{height}\" /></a>")
   }
 }
 

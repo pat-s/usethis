@@ -3,7 +3,7 @@ can_overwrite <- function(path) {
     return(TRUE)
   }
 
-  if (interactive()) {
+  if (is_interactive()) {
     ui_yeah("Overwrite pre-existing file {ui_path(path)}?")
   } else {
     FALSE
@@ -11,11 +11,11 @@ can_overwrite <- function(path) {
 }
 
 check_is_named_list <- function(x, nm = deparse(substitute(x))) {
-  if (!rlang::is_list(x)) {
+  if (!is_list(x)) {
     bad_class <- paste(class(x), collapse = "/")
     ui_stop("{ui_code(nm)} must be a list, not {ui_value(bad_class)}.")
   }
-  if (!rlang::is_dictionaryish(x)) {
+  if (!is_dictionaryish(x)) {
     ui_stop(
       "Names of {ui_code(nm)} must be non-missing, non-empty, and non-duplicated."
     )
@@ -54,34 +54,52 @@ is_installed <- function(pkg) {
   requireNamespace(pkg, quietly = TRUE)
 }
 
-## mimimalist, type-specific purrr::pluck()'s
-pluck_chr <- function(l, what) vapply(l, `[[`, character(1), what)
-
-is_testing <- function() {
-  identical(Sys.getenv("TESTTHAT"), "true")
-}
-
 interactive <- function() {
-  base::interactive() && !is_testing()
+  ui_stop(
+    "Internal error: use rlang's {ui_code('is_interactive()')} \\
+     instead of {ui_code('base::interactive()')}"
+  )
 }
 
-is_string <- function(x) {
-  length(x) == 1 && is.character(x)
+on.exit <- function(...) {
+  ui_stop("
+    Internal error: use withr's {ui_code('defer()')} and friends, \\
+    instead of {ui_code('base::on.exit()')}")
 }
 
-seq2 <- function(from, to) {
-  if (from > to) {
-    integer()
-  } else {
-    seq(from, to)
-  }
-}
-
-indent <- function(x, first = "  ", indent = first) {
-  x <- gsub("\n", paste0("\n", indent), x)
-  paste0(first, x)
+isFALSE <- function(x) {
+  identical(x, FALSE)
 }
 
 isNA <- function(x) {
   length(x) == 1 && is.na(x)
+}
+
+path_first_existing <- function(...) {
+  paths <- path(...)
+  for (path in paths) {
+    if (file_exists(path)) {
+      return(path)
+    }
+  }
+
+  NULL
+}
+
+is_online <- function(host) {
+  !is.null(curl::nslookup(host, error = FALSE))
+}
+
+year <- function() format(Sys.Date(), "%Y")
+
+pluck_lgl <- function(.x, ...) {
+  as_logical(purrr::pluck(.x, ..., .default = NA))
+}
+
+pluck_chr <- function(.x, ...) {
+  as_character(purrr::pluck(.x, ..., .default = NA))
+}
+
+pluck_int <- function(.x, ...) {
+  as_integer(purrr::pluck(.x, ..., .default = NA))
 }

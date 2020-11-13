@@ -4,51 +4,108 @@
 \alias{use_github}
 \title{Connect a local repo with GitHub}
 \usage{
-use_github(organisation = NULL, private = FALSE,
-  protocol = git_protocol(), credentials = NULL,
-  auth_token = github_token(), host = NULL)
+use_github(
+  organisation = NULL,
+  private = FALSE,
+  protocol = git_protocol(),
+  host = NULL,
+  auth_token = deprecated(),
+  credentials = deprecated()
+)
 }
 \arguments{
 \item{organisation}{If supplied, the repo will be created under this
-organisation, instead of the account of the user associated with the
-\code{auth_token}. You must have permission to create repositories.}
+organisation, instead of the login associated with the GitHub token
+discovered for this \code{host}. The user's role and the token's scopes must be
+such that you have permission to create repositories in this
+\code{organisation}.}
 
 \item{private}{If \code{TRUE}, creates a private repository.}
 
-\item{protocol}{Optional. Should be "ssh" or "https", if specified. Defaults
-to the option \code{usethis.protocol} and, if unset, to an interactive choice
-or, in non-interactive sessions, "ssh". \code{NA} triggers the interactive menu.}
+\item{protocol}{One of "https" or "ssh"}
 
-\item{credentials}{A git2r credential object produced with
-\code{\link[git2r:cred_env]{git2r::cred_env()}}, \code{\link[git2r:cred_ssh_key]{git2r::cred_ssh_key()}}, \code{\link[git2r:cred_token]{git2r::cred_token()}}, or
-\code{\link[git2r:cred_user_pass]{git2r::cred_user_pass()}}.}
+\item{host}{GitHub host to target, passed to the \code{.api_url} argument of
+\code{\link[gh:gh]{gh::gh()}}. If unspecified, gh defaults to "https://api.github.com",
+although gh's default can be customised by setting the GITHUB_API_URL
+environment variable.
 
-\item{auth_token}{GitHub personal access token (PAT).}
+For a hypothetical GitHub Enterprise instance, either
+"https://github.acme.com/api/v3" or "https://github.acme.com" is
+acceptable.}
 
-\item{host}{GitHub API host to use. Override with the endpoint-root for your
-GitHub enterprise instance, for example,
-"https://github.hostname.com/api/v3".}
+\item{auth_token, credentials}{\lifecycle{defunct}: No longer consulted now
+that usethis uses the gert package for Git operations, instead of git2r;
+gert relies on the credentials package for auth. The API requests are now
+authorized with the token associated with the \code{host}, as retrieved by
+\code{\link[gh:gh_token]{gh::gh_token()}}.}
 }
 \description{
-\code{use_github()} takes a local project, creates an associated repo on GitHub,
-adds it to your local repo as the \code{origin} remote, and makes an initial push
-to synchronize. \code{use_github()} requires that your project already be a Git
-repository, which you can accomplish with \code{\link[=use_git]{use_git()}}, if needed. See the
-Authentication section below for other necessary setup.
+\code{use_github()} takes a local project and:
+\itemize{
+\item Checks that the initial state is good to go:
+\itemize{
+\item Project is already a Git repo
+\item Current branch is the default branch, e.g. \code{master} or \code{main}
+\item No uncommitted changes
+\item No pre-existing \code{origin} remote
+}
+\item Creates an associated repo on GitHub
+\item Adds that GitHub repo to your local repo as the \code{origin} remote
+\item Makes an initial push to GitHub
+\item Calls \code{\link[=use_github_links]{use_github_links()}}, if the project is an R package
+\item Configures \code{origin/DEFAULT} to be the upstream branch of the local
+\code{DEFAULT} branch, e.g. \code{master} or \code{main}
+}
+
+See the Authentication section below for general setup that is necessary for
+all of this to work.
 }
 \section{Authentication}{
 
-A new GitHub repo will be created via the GitHub API, therefore you must
-make a \href{https://github.com/settings/tokens}{GitHub personal access token (PAT)} available. You can either
-provide this directly via the \code{auth_token} argument or store it for retrieval
-with \code{\link[=github_token]{github_token()}}.
+This function potentially interacts with GitHub in two different ways:
+\itemize{
+\item via the GitHub REST API
+\item as a conventional Git remote
+}
+
+Therefore two types of auth happen.
+
+To create a new repo on GitHub, we \strong{must} call the GitHub REST API, i.e.
+this isn't one of the standard remote Git operations. Therefore you must make
+a GitHub personal access token (PAT) available. See \code{\link[=gh_token_help]{gh_token_help()}} for
+advice on getting and storing your token.
+
+When we clone or pull from GitHub or push to it, depending on the protocol
+(HTTPS vs. SSH) and the privacy of the repo, we may also need regular Git
+credentials, just like we'd need with command line Git.
+
+We highly recommend using the HTTPS protocol, unless you have a specific
+preference for SSH. If you are an "HTTPS person", your GitHub PAT (see above)
+can also be used to authorize standard Git remote operations. Therefore, once
+you've configured your PAT, your setup is complete!
+
+But what if you prefer the SSH protocol? usethis uses the gert package for
+Git operations and gert, in turn, relies on the credentials package for auth:
+\itemize{
+\item \url{https://docs.ropensci.org/gert}
+\item \url{https://docs.ropensci.org/credentials/}
+}
+
+In usethis v2.0.0, we switched from git2r to gert + credentials. The main
+motivation is to provide a smoother user experience by discovering and using
+the same credentials as command line Git (and, therefore, the same as
+RStudio). The credentials package \emph{should} automatically discover your SSH
+keys. This works so well that we have removed all credential-handling
+workarounds from usethis. If you have credential problems, focus your
+troubleshooting on getting the credentials package to find your SSH keys. Its
+\href{https://cran.r-project.org/web/packages/credentials/vignettes/intro.html}{introductory vignette}
+is a good place to start.
 }
 
 \examples{
 \dontrun{
 pkgpath <- file.path(tempdir(), "testpkg")
-create_package(pkgpath) # creates package below temp directory
-proj_set(pkgpath)
+create_package(pkgpath)
 
 ## now, working inside "testpkg", initialize git repository
 use_git()
