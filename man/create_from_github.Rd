@@ -11,15 +11,23 @@ create_from_github(
   rstudio = NULL,
   open = rlang::is_interactive(),
   protocol = git_protocol(),
-  host = "https://github.com",
+  host = NULL,
   auth_token = deprecated(),
   credentials = deprecated()
 )
 }
 \arguments{
-\item{repo_spec}{GitHub repo specification in this form: \code{owner/repo}. The
-\code{repo} part will be the name of the new local folder, which is also
-a project and Git repo.}
+\item{repo_spec}{A string identifying the GitHub repo in one of these forms:
+\itemize{
+\item Plain \code{OWNER/REPO} spec
+\item Browser URL, such as \code{"https://github.com/OWNER/REPO"}
+\item HTTPS Git URL, such as \code{"https://github.com/OWNER/REPO.git"}
+\item SSH Git URL, such as \code{"git@github.com:OWNER/REPO.git"}
+}
+
+In the case of a browser, HTTPS, or SSH URL, the \code{host} is extracted from
+the URL. The \code{REPO} part will be the name of the new local folder, which is
+also a project and Git repo.}
 
 \item{destdir}{The new folder is stored here. If \code{NULL}, defaults to user's
 Desktop or some other conspicuous place. You can also set a default
@@ -27,17 +35,19 @@ location using the option \code{usethis.destdir}, e.g.
 \code{options(usethis.destdir = "a/good/dir")}, perhaps saved to your
 \code{.Rprofile} with \code{\link[=edit_r_profile]{edit_r_profile()}}}
 
-\item{fork}{If \code{TRUE}, we create and clone a fork. If \code{FALSE}, we clone
-\code{repo_spec} itself. If \code{NA} (the default), we check your permissions on the
-target repo. If you can push, we clone \code{repo_spec} (so, \code{fork = FALSE}).
-If you can't push, we do fork-and-clone and other setup:
+\item{fork}{If \code{FALSE}, we clone \code{repo_spec}. If \code{TRUE}, we fork
+\code{repo_spec}, clone that fork, and do additional set up favorable for
+future pull requests:
 \itemize{
-\item The source repo is configured as the \code{upstream} remote, using the
-indicated \code{protocol}.
+\item The source repo, \code{repo_spec}, is configured as the \code{upstream} remote,
+using the indicated \code{protocol}.
 \item The local \code{DEFAULT} branch is set to track \code{upstream/DEFAULT}, where
-\code{DEFAULT} is typically \code{master} or \code{main}. It is also immediately
-pulled, to cover the case of a pre-existing, out-of-date fork.
-}}
+\code{DEFAULT} is typically \code{master} or \code{main}. It is also immediately pulled,
+to cover the case of a pre-existing, out-of-date fork.
+}
+
+If \code{fork = NA} (the default), we check your permissions on \code{repo_spec}. If
+you can push, we set \code{fork = FALSE}, If you cannot, we set \code{fork = TRUE}.}
 
 \item{rstudio}{Initiate an \href{https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects}{RStudio Project}?
 Defaults to \code{TRUE} if in an RStudio session and project has no
@@ -52,26 +62,28 @@ the cloned repo may already be an RStudio Project, i.e. may already have a
 \item Otherwise, the working directory and active project is changed.
 }}
 
-\item{protocol}{Optional. Should be "https" or "ssh", if specified. Defaults
-to the option \code{usethis.protocol} and, if unset, to an interactive choice
-or, in non-interactive sessions, \code{"https"}. \code{NA} triggers the interactive
-menu.}
+\item{protocol}{One of "https" or "ssh"}
 
-\item{host}{GitHub API host to use. Example for a GitHub Enterprise instance:
-"https://github.acme.com". It is also acceptable to provide the API root
-URL, e.g. "https://api.github.com" or "https://github.acme.com/api/v3".}
+\item{host}{GitHub host to target, passed to the \code{.api_url} argument of
+\code{\link[gh:gh]{gh::gh()}}. If unspecified, gh defaults to "https://api.github.com",
+although gh's default can be customised by setting the GITHUB_API_URL
+environment variable.
+
+For a hypothetical GitHub Enterprise instance, either
+"https://github.acme.com/api/v3" or "https://github.acme.com" is
+acceptable.}
 
 \item{auth_token}{\lifecycle{defunct}: No longer consulted now
 that usethis uses the gert package for Git operations, instead of git2r;
 gert relies on the credentials package for auth. The API requests are now
 authorized with the token associated with the \code{host}, as retrieved by
-\code{\link[gitcreds:gitcreds_get]{gitcreds::gitcreds_get()}}.}
+\code{\link[gh:gh_token]{gh::gh_token()}}.}
 
 \item{credentials}{\lifecycle{defunct}: No longer consulted now
 that usethis uses the gert package for Git operations, instead of git2r;
 gert relies on the credentials package for auth. The API requests are now
 authorized with the token associated with the \code{host}, as retrieved by
-\code{\link[gitcreds:gitcreds_get]{gitcreds::gitcreds_get()}}.}
+\code{\link[gh:gh_token]{gh::gh_token()}}.}
 }
 \description{
 Creates a new local project and Git repository from a repo on GitHub, by
@@ -83,11 +95,7 @@ branch setup, leaving you in the perfect position to make a pull request with
 
 \code{create_from_github()} works best when we can find a GitHub personal access
 token in the Git credential store (just like many other usethis functions).
-\itemize{
-\item If you do not have a token, \code{\link[=create_github_token]{create_github_token()}} provides assistance.
-\item Once you have a token, \code{\link[gitcreds:gitcreds_get]{gitcreds::gitcreds_get()}} helps you store it for
-future re-discovery and re-use.
-}
+See \code{\link[=gh_token_help]{gh_token_help()}} for more advice.
 }
 \section{Authentication}{
 
@@ -101,15 +109,8 @@ Therefore two types of auth happen.
 
 To create a new repo on GitHub, we \strong{must} call the GitHub REST API, i.e.
 this isn't one of the standard remote Git operations. Therefore you must make
-a \href{https://github.com/settings/tokens}{GitHub personal access token (PAT)}
-available. There are two ways to do this, in order of preference:
-\itemize{
-\item Configure your token as the \code{GITHUB_PAT} env var. Then it can be used by
-many packages and functions, without any effort on your part. If you don't
-have a token yet or you haven't configured it as an env var, see
-\code{\link[=create_github_token]{create_github_token()}}.
-\item Provide the token directly via the \code{auth_token} argument.
-}
+a GitHub personal access token (PAT) available. See \code{\link[=gh_token_help]{gh_token_help()}} for
+advice on getting and storing your token.
 
 When we clone or pull from GitHub or push to it, depending on the protocol
 (HTTPS vs. SSH) and the privacy of the repo, we may also need regular Git
@@ -117,19 +118,17 @@ credentials, just like we'd need with command line Git.
 
 We highly recommend using the HTTPS protocol, unless you have a specific
 preference for SSH. If you are an "HTTPS person", your GitHub PAT (see above)
-can also be used to authorize standard Git remote operations. Once you've
-configured your PAT, your setup is complete! See \code{\link[=use_git_protocol]{use_git_protocol()}} for how
-to tell usethis about your preference for HTTPS (or SSH) by setting an
-option.
+can also be used to authorize standard Git remote operations. Therefore, once
+you've configured your PAT, your setup is complete!
 
-But what about SSH? usethis uses the gert package for Git operations
-and gert, in turn, relies on the credentials package for auth:
+But what if you prefer the SSH protocol? usethis uses the gert package for
+Git operations and gert, in turn, relies on the credentials package for auth:
 \itemize{
 \item \url{https://docs.ropensci.org/gert}
 \item \url{https://docs.ropensci.org/credentials/}
 }
 
-In usethis v1.7.0, we switched from git2r to gert + credentials. The main
+In usethis v2.0.0, we switched from git2r to gert + credentials. The main
 motivation is to provide a smoother user experience by discovering and using
 the same credentials as command line Git (and, therefore, the same as
 RStudio). The credentials package \emph{should} automatically discover your SSH
@@ -143,6 +142,12 @@ is a good place to start.
 \examples{
 \dontrun{
 create_from_github("r-lib/usethis")
+
+# repo_spec can be a URL
+create_from_github("https://github.com/r-lib/usethis")
+
+# a URL repo_spec also specifies the host (e.g. GitHub Enterprise instance)
+create_from_github("https://github.acme.com/OWNER/REPO")
 }
 }
 \seealso{

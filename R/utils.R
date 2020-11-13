@@ -54,9 +54,6 @@ is_installed <- function(pkg) {
   requireNamespace(pkg, quietly = TRUE)
 }
 
-## mimimalist, type-specific purrr::pluck()'s
-pluck_chr <- function(l, what) vapply(l, `[[`, character(1), what)
-
 interactive <- function() {
   ui_stop(
     "Internal error: use rlang's {ui_code('is_interactive()')} \\
@@ -64,12 +61,13 @@ interactive <- function() {
   )
 }
 
-indent <- function(x, first = "  ", indent = first) {
-  x <- gsub("\n", paste0("\n", indent), x)
-  paste0(first, x)
+on.exit <- function(...) {
+  ui_stop("
+    Internal error: use withr's {ui_code('defer()')} and friends, \\
+    instead of {ui_code('base::on.exit()')}")
 }
 
-isFALSE = function(x) {
+isFALSE <- function(x) {
   identical(x, FALSE)
 }
 

@@ -36,12 +36,7 @@ NULL
 #' @export
 #' @rdname issue-this
 issue_close_community <- function(number, reprex = FALSE) {
-  cfg <- github_remote_config(github_get = TRUE)
-  if (!cfg$type %in% c("ours", "fork")) {
-    stop_bad_github_remote_config(cfg)
-  }
-
-  tr <- target_repo(cfg)
+  tr <- target_repo(github_get = TRUE)
   if (!tr$can_push) {
     # https://docs.github.com/en/github/setting-up-and-managing-organizations-and-teams/repository-permission-levels-for-an-organization#repository-access-for-each-permission-level
     # I have not found a way to detect triage permission via API.
@@ -87,12 +82,7 @@ issue_close_community <- function(number, reprex = FALSE) {
 #' @export
 #' @rdname issue-this
 issue_reprex_needed <- function(number) {
-  cfg <- github_remote_config(github_get = TRUE)
-  if (!cfg$type %in% c("ours", "fork")) {
-    stop_bad_github_remote_config(cfg)
-  }
-
-  tr <- target_repo(cfg)
+  tr <- target_repo(github_get = TRUE)
   if (!tr$can_push) {
     # https://docs.github.com/en/github/setting-up-and-managing-organizations-and-teams/repository-permission-levels-for-an-organization#repository-access-for-each-permission-level
     # I can't find anyway to detect triage permission via API.
@@ -132,7 +122,7 @@ issue_reprex_needed <- function(number) {
 
 issue_comment_add <- function(number, message, tr = NULL) {
   issue_gh(
-    "POST /repos/:owner/:repo/issues/:issue_number/comments",
+    "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
     number = number,
     body = message,
     tr = tr
@@ -141,7 +131,7 @@ issue_comment_add <- function(number, message, tr = NULL) {
 
 issue_edit <- function(number, ..., tr = NULL) {
   issue_gh(
-    "PATCH /repos/:owner/:repo/issues/:issue_number",
+    "PATCH /repos/{owner}/{repo}/issues/{issue_number}",
     ...,
     number = number,
     tr = tr
@@ -150,7 +140,7 @@ issue_edit <- function(number, ..., tr = NULL) {
 
 issue_info <- function(number, tr = NULL) {
   issue_gh(
-    "GET /repos/:owner/:repo/issues/:issue_number",
+    "GET /repos/{owner}/{repo}/issues/{issue_number}",
     number = number,
     tr = tr
   )
@@ -165,16 +155,9 @@ issue_info <- function(number, tr = NULL) {
 #   because that is required to vet the GitHub remote config anyway.
 #   The fallback to target_repo() is purely for development convenience.
 issue_gh <- function(endpoint, ..., number, tr = NULL) {
-  tr <- tr %||% target_repo()
-  tkn <- if (is.na(tr$token)) NULL else tr$token
-  out <- gh::gh(
-    endpoint,
-    ...,
-    issue_number = number,
-    owner = tr$repo_owner, repo = tr$repo_name,
-    .api_url = tr$api_url, .token = tkn
-  )
-
+  tr <- tr %||% target_repo(github_get = NA)
+  gh <- gh_tr(tr)
+  out <- gh(endpoint, ..., issue_number = number)
   if (substr(endpoint, 1, 4) == "GET ") {
     out
   } else {

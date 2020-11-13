@@ -143,10 +143,7 @@ ui_warn <- function(x, .envir = parent.frame()) {
 #' @param code Code to execute with usual UI output silenced.
 #' @export
 ui_silence <- function(code) {
-  old <- options(usethis.quiet = TRUE)
-  on.exit(options(old), add = TRUE)
-
-  code
+  withr::with_options(list(usethis.quiet = TRUE), code)
 }
 
 # Questions ---------------------------------------------------------------
@@ -289,7 +286,12 @@ ui_unset <- function(x = "unset") {
 
 # rlang::inform() wrappers -----------------------------------------------------
 
-ui_bullet <- function(x, bullet) {
+indent <- function(x, first = "  ", indent = first) {
+  x <- gsub("\n", paste0("\n", indent), x)
+  paste0(first, x)
+}
+
+ui_bullet <- function(x, bullet = cli::symbol$bullet) {
   bullet <- paste0(bullet, " ")
   x <- indent(x, bullet, "  ")
   ui_inform(x)
@@ -311,7 +313,8 @@ hd_line <- function(name) {
   ui_inform(crayon::bold(name))
 }
 
-kv_line <- function(key, value) {
+kv_line <- function(key, value, .envir = parent.frame()) {
   value <- if (is.null(value)) ui_unset() else ui_value(value)
-  ui_inform("* ", key, ": ", value)
+  key <- glue(key, .envir = .envir)
+  ui_inform(glue("{cli::symbol$bullet} {key}: {value}"))
 }

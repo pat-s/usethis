@@ -6,6 +6,7 @@ BugReports
 CCBY
 CLA
 CMD
+CNAME
 CircleCI
 CoC
 Codecov
@@ -75,12 +76,12 @@ colours
 config
 cpp
 cran
+customised
 dev
 devtools
 discoverable
 else's
 emacs
-env
 eval
 favicons
 favour
@@ -92,6 +93,7 @@ funder
 gc
 gert
 gh
+gh's
 gitcreds
 github
 gitignore
@@ -105,6 +107,7 @@ ing
 initialisation
 initialises
 initialising
+io
 labelled
 labelling
 learnr
@@ -133,6 +136,7 @@ r's
 rOpenSci
 rcmdcheck
 rebase
+reconfigures
 redirections
 repo
 repo's

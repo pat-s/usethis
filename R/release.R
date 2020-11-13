@@ -15,10 +15,8 @@
 #' }
 use_release_issue <- function(version = NULL) {
   check_is_package("use_release_issue()")
-  cfg <- github_remote_config(github_get = TRUE)
-  tr <- target_repo(cfg)
-  check_have_github_info(tr)
-  if (!tr$can_push) {
+  tr <- target_repo(github_get = TRUE)
+  if (!isTRUE(tr$can_push)) {
     ui_line("
       It is very unusual to open a release issue on a repo you can't push to:
         {ui_value(tr$repo_spec)}")
@@ -35,13 +33,11 @@ use_release_issue <- function(version = NULL) {
   on_cran <- !is.null(cran_version())
   checklist <- release_checklist(version, on_cran)
 
-  issue <- gh::gh(
-    "POST /repos/:owner/:repo/issues",
-    owner = tr$repo_owner,
-    repo = tr$repo_name,
+  gh <- gh_tr(tr)
+  issue <- gh(
+    "POST /repos/{owner}/{repo}/issues",
     title = glue("Release {project_name()} {version}"),
-    body = paste0(checklist, "\n", collapse = ""),
-    .api_url = tr$api_url, .token = tr$token
+    body = paste0(checklist, "\n", collapse = "")
   )
 
   view_url(issue$html_url)
@@ -121,8 +117,8 @@ release_type <- function(version) {
 #' checks that you've pushed all commits to GitHub.
 #'
 #' @param host,auth_token \lifecycle{defunct}: No longer consulted now that
-#'   usethis uses the gitcreds package to lookup a token based on a URL
-#'   determined from the current project's GitHub remotes.
+#'   usethis allows the gh package to lookup a token based on a URL determined
+#'   from the current project's GitHub remotes.
 #' @export
 use_github_release <- function(host = deprecated(),
                                auth_token = deprecated()) {
@@ -133,9 +129,8 @@ use_github_release <- function(host = deprecated(),
     deprecate_warn_auth_token("use_github_release")
   }
 
-  cfg <- github_remote_config(github_get = TRUE)
-  tr <- target_repo(cfg)
-  if (!tr$can_push) {
+  tr <- target_repo(github_get = TRUE)
+  if (!isTRUE(tr$can_push)) {
     ui_stop("
       You don't seem to have push access for {ui_value(tr$repo_spec)}, which \\
       is required to draft a release.")
@@ -158,15 +153,13 @@ use_github_release <- function(host = deprecated(),
   news <- news_latest(read_utf8(path))
   package <- package_data()
 
-  release <- gh::gh(
-    "POST /repos/:owner/:repo/releases",
-    owner = tr$repo_owner, repo = tr$repo_name,
+  gh <- gh_tr(tr)
+  release <- gh(
+    "POST /repos/{owner}/{repo}/releases",
     tag_name = paste0("v", package$Version),
-    target_commitish = gert::git_info(git_repo())$commit,
+    target_commitish = gert::git_info(repo = git_repo())$commit,
     name = paste0(package$Package, " ", package$Version),
-    body = news,
-    draft = TRUE,
-    .api_url = tr$api_url, .token = tr$token
+    body = news, draft = TRUE
   )
 
   view_url(release$html_url)

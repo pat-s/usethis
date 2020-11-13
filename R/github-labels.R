@@ -74,24 +74,15 @@ use_github_labels <- function(repo_spec = deprecated(),
     deprecate_warn_auth_token("use_github_labels")
   }
 
-  cfg <- github_remote_config(github_get = TRUE)
-  tr <- target_repo(cfg)
-  if (!tr$can_push) {
+  tr <- target_repo(github_get = TRUE)
+  if (!isTRUE(tr$can_push)) {
     ui_stop("
       You don't seem to have push access for {ui_value(tr$repo_spec)}, which \\
       is required to modify labels.")
   }
+  gh <- gh_tr(tr)
 
-  gh <- function(endpoint, ...) {
-    gh::gh(
-      endpoint,
-      ...,
-      owner = tr$repo_owner, repo = tr$repo_name,
-      .token = tr$token, .api_url = tr$api_url
-    )
-  }
-
-  cur_labels <- gh("GET /repos/:owner/:repo/labels")
+  cur_labels <- gh("GET /repos/{owner}/{repo}/labels")
   label_attr <- function(x, l, mapper = map_chr) {
     mapper(l, x, .default = NA)
   }
@@ -112,7 +103,7 @@ use_github_labels <- function(repo_spec = deprecated(),
     # Must first PATCH issues, then sort out labels
     issues <- map(
       to_rename,
-      ~ gh("GET /repos/:owner/:repo/issues", labels = .x)
+      ~ gh("GET /repos/{owner}/{repo}/issues", labels = .x)
     )
     issues <- purrr::flatten(issues)
     number <- map_lgl(issues, "number")
@@ -131,7 +122,7 @@ use_github_labels <- function(repo_spec = deprecated(),
     purrr::iwalk(
       new_labels,
       ~ gh(
-        "PATCH /repos/:owner/:repo/issues/:issue_number",
+        "PATCH /repos/{owner}/{repo}/issues/{issue_number}",
         issue_number = .y,
         labels = I(.x)
       )
@@ -140,14 +131,14 @@ use_github_labels <- function(repo_spec = deprecated(),
     # issues have correct labels now; safe to edit labels themselves
     purrr::walk(
       to_rename,
-      ~ gh("DELETE /repos/:owner/:repo/labels/:name", name = .x)
+      ~ gh("DELETE /repos/{owner}/{repo}/labels/{name}", name = .x)
     )
     labels <- union(labels, setdiff(rename, cur_label_names))
   } else {
     ui_info("No labels need renaming")
   }
 
-  cur_labels <- gh("GET /repos/:owner/:repo/labels")
+  cur_labels <- gh("GET /repos/{owner}/{repo}/labels")
   cur_label_names <- label_attr("name", cur_labels)
 
   # Add missing labels
@@ -159,7 +150,7 @@ use_github_labels <- function(repo_spec = deprecated(),
 
     for (label in to_add) {
       gh(
-        "POST /repos/:owner/:repo/labels",
+        "POST /repos/{owner}/{repo}/labels",
         name = label,
         color = purrr::pluck(colours, label, .default = random_colour()),
         description = purrr::pluck(descriptions, label, .default = "")
@@ -167,7 +158,7 @@ use_github_labels <- function(repo_spec = deprecated(),
     }
   }
 
-  cur_labels <- gh("GET /repos/:owner/:repo/labels")
+  cur_labels <- gh("GET /repos/{owner}/{repo}/labels")
   cur_label_names <- label_attr("name", cur_labels)
 
   # Update colours
@@ -182,7 +173,7 @@ use_github_labels <- function(repo_spec = deprecated(),
 
     for (label in to_update) {
       gh(
-        "PATCH /repos/:owner/:repo/labels/:name",
+        "PATCH /repos/{owner}/{repo}/labels/{name}",
         name = label,
         color = colours[[label]]
       )
@@ -201,7 +192,7 @@ use_github_labels <- function(repo_spec = deprecated(),
 
     for (label in to_update) {
       gh(
-        "PATCH /repos/:owner/:repo/labels/:name",
+        "PATCH /repos/{owner}/{repo}/labels/{name}",
         name = label,
         description = descriptions[[label]]
       )
@@ -217,11 +208,11 @@ use_github_labels <- function(repo_spec = deprecated(),
       ui_done("Removing default labels: {ui_value(to_remove)}")
 
       for (label in to_remove) {
-        issues <- gh("GET /repos/:owner/:repo/issues", labels = label)
+        issues <- gh("GET /repos/{owner}/{repo}/issues", labels = label)
         if (length(issues) > 0) {
           ui_todo("Delete {ui_value(label)} label manually; it has associated issues")
         } else {
-          gh("DELETE /repos/:owner/:repo/labels/:name", name = label)
+          gh("DELETE /repos/{owner}/{repo}/labels/{name}", name = label)
         }
       }
     }

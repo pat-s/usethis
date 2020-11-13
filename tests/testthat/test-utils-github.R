@@ -44,6 +44,45 @@ test_that("parse_github_remotes() works for length zero input", {
   )
 })
 
+test_that("parse_repo_url() passes a naked repo spec through", {
+  out <- parse_repo_url("OWNER/REPO")
+  expect_equal(
+    out,
+    list(repo_spec = "OWNER/REPO", host = NULL)
+  )
+})
+
+test_that("parse_repo_url() handles GitHub remote URLs", {
+  urls <- list(
+    https      = "https://github.com/OWNER/REPO.git",
+    ghe        = "https://github.acme.com/OWNER/REPO.git",
+    browser    = "https://github.com/OWNER/REPO",
+    ssh        = "git@github.com:OWNER/REPO.git"
+  )
+  out <- map(urls, parse_repo_url)
+  expect_match(map_chr(out, "repo_spec"), "OWNER/REPO", fixed = TRUE)
+  out_host <- map_chr(out, "host")
+  expect_match(
+    out_host[c("https", "browser", "ssh")],
+    "https://github.com",
+    fixed = TRUE
+  )
+  expect_equal(out_host[["ghe"]], "https://github.acme.com")
+})
+
+test_that("parse_repo_url() errors for non-GitHub remote URLs", {
+  urls <- list(
+    gitlab1    = "https://gitlab.com/OWNER/REPO.git",
+    gitlab2    = "git@gitlab.com:OWNER/REPO.git",
+    bitbucket1 = "https://bitbucket.org/OWNER/REPO.git",
+    bitbucket2 = "git@bitbucket.org:OWNER/REPO.git"
+  )
+  safely_parse_repo_url <- purrr::safely(parse_repo_url)
+  out <- map(urls, safely_parse_repo_url)
+  out_result <- map(out, "result")
+  expect_true(all(map_lgl(out_result, is.null)))
+})
+
 test_that("github_remote_list() works", {
   create_local_project()
   use_git()
@@ -110,13 +149,6 @@ test_that("github_remotes() works", {
   expect_true(is.na(grl$is_fork))
 })
 
-test_that("github_login() returns user's login", {
-  with_mock(
-    `gh::gh_whoami` = function(...) list(login = "USER"),
-    expect_equal(github_login("PAT"), "USER")
-  )
-})
-
 # GitHub remote configuration --------------------------------------------------
 # very sparse, but you have to start somewhere!
 
@@ -131,17 +163,15 @@ test_that("fork_upstream_is_not_origin_parent is detected", {
   use_git()
   use_git_remote("origin", "https://github.com/jennybc/gh.git")
   use_git_remote("upstream", "https://github.com/r-pkgs/gh.git")
-  grl <- github_remote_list()
-  grl$can_push <- TRUE
-  grl$is_fork <- c(TRUE, FALSE)
-  grl$have_github_info <- TRUE
-  grl$parent_repo_owner  = c("r-lib", NA)
+  gr <- github_remotes(github_get = FALSE)
+  gr$github_got <- TRUE
+  gr$is_fork <- c(TRUE, FALSE)
+  gr$can_push <- TRUE
+  gr$perm_known <- TRUE
+  gr$parent_repo_owner <- c("r-lib", NA)
   with_mock(
-    `usethis:::github_remote_list` = function(...) grl,
-    `usethis:::github_remotes` = function(...) grl,
+    `usethis:::github_remotes` = function(...) gr,
     cfg <- github_remote_config()
   )
   expect_equal(cfg$type, "fork_upstream_is_not_origin_parent")
-  expect_false(cfg$pr_ready)
 })
-

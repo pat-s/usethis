@@ -18,6 +18,29 @@ pr_pull_upstream <- function() {
   )
 }
 
+#' @section `pr_sync()`:
+#' Bundling these operations together did not seem justified, in terms of how
+#' rarely this comes up and, when it does, how likely merge conflicts are.
+#' Users of `pr_sync()` should implement these steps "by hand":
+#' * (Check you are on a PR branch)
+#' * `pr_pull()`
+#' * `pr_merge_main()`, deal with any merge conflicts, if any
+#' * `pr_push()`
+#' @export
+#' @rdname usethis-defunct
+pr_sync <- function() {
+  details <- glue("
+    Sync a PR with:
+      * {ui_code('pr_pull()')}
+      * {ui_code('pr_merge_main()')}
+      * {ui_code('pr_pull()')}")
+  lifecycle::deprecate_stop(
+    when = "2.0.0",
+    what = "pr_sync()",
+    details = details
+  )
+}
+
 #' @section `browse_github_token()`, `browse_github_pat()`:
 #' These functions have been replaced by [create_github_token()].
 #' @rdname usethis-defunct
@@ -40,13 +63,17 @@ browse_github_pat <- function(...) {
   )
 }
 
+
+#' @section `github_token()`:
+#' All implicit and explicit token discovery routes through [gh::gh_token()]
+#' now.
 #' @rdname usethis-defunct
 #' @export
 github_token <- function() {
   details <- glue("
-    Use {ui_code('gitcreds::gitcreds_get()')}, \\
-    {ui_code('gitcreds::gitcreds_set()')}, and \\
-    {ui_code('gh::gh_token()')} to manage GitHub personal access tokens.")
+    Call {ui_code('gh::gh_token()')} to retrieve a GitHub personal access token
+    Call {ui_code('gh_token_help()')} if you need help getting or configuring \\
+    your token")
   lifecycle::deprecate_stop(
     "2.0.0",
     what = "github_token()",
@@ -78,7 +105,6 @@ deprecate_warn_credentials <- function(whos_asking, details = NULL) {
 #'
 #' \lifecycle{defunct}
 #'
-
 #' In usethis v2.0.0, usethis switched from git2r to gert (+ credentials) for
 #' all Git operations. This pair of packages (gert + credentials) is designed to
 #' discover and use the same credentials as command line Git. As a result, a
@@ -90,9 +116,10 @@ deprecate_warn_credentials <- function(whos_asking, details = NULL) {
 #' vignette](https://cran.r-project.org/web/packages/credentials/vignettes/intro.html)
 #' is a good place to start.
 #'
-#' If you use the HTTPS protocol, a configured `GITHUB_PAT` will satisfy all
-#' auth needs, for both Git and the GitHub API, and is therefore the easiest
-#' approach to get working. See [create_github_token()] for more.
+#' If you use the HTTPS protocol (which we recommend), a GitHub personal access
+#' token will satisfy all auth needs, for both Git and the GitHub API, and is
+#' therefore the easiest approach to get working. See [gh_token_help()] for
+#' more.
 #'
 #' @param protocol Deprecated.
 #' @param auth_token Deprecated.
@@ -143,9 +170,9 @@ deprecate_warn_auth_token <- function(whos_asking, details = NULL) {
   what <- glue("{whos_asking}(auth_token = )")
 
   auth_token_explanation <- glue("
-    usethis now delegates token lookup to the gitcreds package, which \\
-    retrieves credentials based on a URL.
-    usethis forms this URL based on the current project's Git remotes.
+    usethis now delegates token lookup to the gh package, which retrieves \\
+    credentials based on the targeted host URL.
+    This URL is determined by the current project's Git remotes.
     The {ui_code('auth_token')} argument is ignored and will eventually be \\
     removed.")
 

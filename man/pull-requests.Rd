@@ -8,7 +8,6 @@
 \alias{pr_push}
 \alias{pr_pull}
 \alias{pr_merge_main}
-\alias{pr_sync}
 \alias{pr_view}
 \alias{pr_pause}
 \alias{pr_finish}
@@ -25,8 +24,6 @@ pr_push()
 pr_pull()
 
 pr_merge_main()
-
-pr_sync()
 
 pr_view(number = NULL)
 
@@ -72,7 +69,7 @@ credentials do we mean?
 \itemize{
 \item A GitHub personal access token (PAT) must be discoverable by the gh
 package, which is used for GitHub operations via the REST API. See
-\code{\link[=create_github_token]{create_github_token()}} for more about getting and configuring a PAT.
+\code{\link[=gh_token_help]{gh_token_help()}} for more about getting and configuring a PAT.
 \item If you use the HTTPS protocol for Git remotes, your PAT is also used for
 Git operations, such as \verb{git push}. Usethis uses the gert package for this,
 so the PAT must be discoverable by gert. Generally gert and gh will
@@ -84,7 +81,8 @@ addition to your PAT. The public key must be added to your GitHub account.
 }
 
 If the \verb{pr_*} functions need to configure a new remote, its transport
-protocol (HTTPS vs SSH) is determined by the protocol used for \code{origin}.
+protocol (HTTPS vs SSH) is determined by the protocol used for the
+source repo (\code{upstream}, when working in a fork, and \code{origin} otherwise).
 }
 
 \section{For contributors}{
@@ -140,12 +138,16 @@ repo, to get a good start point. Creates and checks out a new branch. Nothing
 is pushed to or created on GitHub (that does not happen until the first time
 you call \code{pr_push()}).
 \item \code{pr_resume()}: Resume work on a PR by switching to an existing local branch
-and pulling any changes from its upstream tracking branch, if it has one.
-\item \code{pr_fetch()}: Checks out a PR on the source repo for local exploration.
-This can cause a new remote to be configured and a new local branch to be
-created. The local branch is configured to track its remote counterpart.
-\code{pr_fetch()} puts a maintainer in a position where they can push changes into
-an external PR via \code{pr_push()}.
+and pulling any changes from its upstream tracking branch, if it has one. If
+called with no arguments, up to 9 local branches are offered for interactive
+selection, with a preference for branches connected to PRs and for branches
+with recent activity.
+\item \code{pr_fetch()}: Checks out a PR on the source repo for local exploration. If
+called with no arguments, up to 9 open PRs are offered for interactive
+selection. This can cause a new remote to be configured and a new local
+branch to be created. The local branch is configured to track its remote
+counterpart. \code{pr_fetch()} puts a maintainer in a position where they can push
+changes into an external PR via \code{pr_push()}.
 \item \code{pr_push()}: The first time it's called, a PR branch is pushed to \code{origin}
 and you're taken to a webpage where a new PR (or draft PR) can be created.
 This also sets up the local branch to track its remote counterpart.
@@ -157,10 +159,6 @@ back into your local work.
 \item \code{pr_merge_main()}: Pulls changes from the default branch of the source repo
 into the current local branch. This can be used when the local branch is the
 default branch or when it's a PR branch.
-\item \code{pr_sync()} = \code{pr_pull() + pr_merge_main() + pr_push()}. In words, grab any
-remote changes in the PR and merge then into your local work. Then merge in
-any changes from the default branch of the primary repo. Finally, push the
-result of all this back into the PR.
 \item \code{pr_pause()}: Makes sure you're up-to-date with any remote changes in the
 PR. Then switches back to the default branch (usually named \code{main} or
 \code{master}) and pulls from the source repo.

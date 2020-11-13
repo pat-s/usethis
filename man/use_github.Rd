@@ -8,7 +8,7 @@ use_github(
   organisation = NULL,
   private = FALSE,
   protocol = git_protocol(),
-  host = "https://github.com",
+  host = NULL,
   auth_token = deprecated(),
   credentials = deprecated()
 )
@@ -22,20 +22,22 @@ such that you have permission to create repositories in this
 
 \item{private}{If \code{TRUE}, creates a private repository.}
 
-\item{protocol}{Optional. Should be "https" or "ssh", if specified. Defaults
-to the option \code{usethis.protocol} and, if unset, to an interactive choice
-or, in non-interactive sessions, \code{"https"}. \code{NA} triggers the interactive
-menu.}
+\item{protocol}{One of "https" or "ssh"}
 
-\item{host}{GitHub API host to use. Example for a GitHub Enterprise instance:
-"https://github.acme.com". It is also acceptable to provide the API root
-URL, e.g. "https://api.github.com" or "https://github.acme.com/api/v3".}
+\item{host}{GitHub host to target, passed to the \code{.api_url} argument of
+\code{\link[gh:gh]{gh::gh()}}. If unspecified, gh defaults to "https://api.github.com",
+although gh's default can be customised by setting the GITHUB_API_URL
+environment variable.
+
+For a hypothetical GitHub Enterprise instance, either
+"https://github.acme.com/api/v3" or "https://github.acme.com" is
+acceptable.}
 
 \item{auth_token, credentials}{\lifecycle{defunct}: No longer consulted now
 that usethis uses the gert package for Git operations, instead of git2r;
 gert relies on the credentials package for auth. The API requests are now
 authorized with the token associated with the \code{host}, as retrieved by
-\code{\link[gitcreds:gitcreds_get]{gitcreds::gitcreds_get()}}.}
+\code{\link[gh:gh_token]{gh::gh_token()}}.}
 }
 \description{
 \code{use_github()} takes a local project and:
@@ -49,9 +51,8 @@ authorized with the token associated with the \code{host}, as retrieved by
 }
 \item Creates an associated repo on GitHub
 \item Adds that GitHub repo to your local repo as the \code{origin} remote
-\item Offers to commit changes, e.g. the addition of GitHub links to the
-URL and BugReports fields of DESCRIPTION
 \item Makes an initial push to GitHub
+\item Calls \code{\link[=use_github_links]{use_github_links()}}, if the project is an R package
 \item Configures \code{origin/DEFAULT} to be the upstream branch of the local
 \code{DEFAULT} branch, e.g. \code{master} or \code{main}
 }
@@ -71,15 +72,8 @@ Therefore two types of auth happen.
 
 To create a new repo on GitHub, we \strong{must} call the GitHub REST API, i.e.
 this isn't one of the standard remote Git operations. Therefore you must make
-a \href{https://github.com/settings/tokens}{GitHub personal access token (PAT)}
-available. There are two ways to do this, in order of preference:
-\itemize{
-\item Configure your token as the \code{GITHUB_PAT} env var. Then it can be used by
-many packages and functions, without any effort on your part. If you don't
-have a token yet or you haven't configured it as an env var, see
-\code{\link[=create_github_token]{create_github_token()}}.
-\item Provide the token directly via the \code{auth_token} argument.
-}
+a GitHub personal access token (PAT) available. See \code{\link[=gh_token_help]{gh_token_help()}} for
+advice on getting and storing your token.
 
 When we clone or pull from GitHub or push to it, depending on the protocol
 (HTTPS vs. SSH) and the privacy of the repo, we may also need regular Git
@@ -87,19 +81,17 @@ credentials, just like we'd need with command line Git.
 
 We highly recommend using the HTTPS protocol, unless you have a specific
 preference for SSH. If you are an "HTTPS person", your GitHub PAT (see above)
-can also be used to authorize standard Git remote operations. Once you've
-configured your PAT, your setup is complete! See \code{\link[=use_git_protocol]{use_git_protocol()}} for how
-to tell usethis about your preference for HTTPS (or SSH) by setting an
-option.
+can also be used to authorize standard Git remote operations. Therefore, once
+you've configured your PAT, your setup is complete!
 
-But what about SSH? usethis uses the gert package for Git operations
-and gert, in turn, relies on the credentials package for auth:
+But what if you prefer the SSH protocol? usethis uses the gert package for
+Git operations and gert, in turn, relies on the credentials package for auth:
 \itemize{
 \item \url{https://docs.ropensci.org/gert}
 \item \url{https://docs.ropensci.org/credentials/}
 }
 
-In usethis v1.7.0, we switched from git2r to gert + credentials. The main
+In usethis v2.0.0, we switched from git2r to gert + credentials. The main
 motivation is to provide a smoother user experience by discovering and using
 the same credentials as command line Git (and, therefore, the same as
 RStudio). The credentials package \emph{should} automatically discover your SSH
