@@ -12,7 +12,7 @@
 #'   of typos in live settings, these shorter forms are accepted:
 #'
 #'     * GitHub repo spec: "OWNER/REPO". Equivalent to
-#'       `https://github.com/r-lib/OWNER/REPO/DEFAULT_BRANCH.zip`.
+#'       `https://github.com/OWNER/REPO/DEFAULT_BRANCH.zip`.
 #'     * bit.ly or rstd.io shortlinks: "bit.ly/xxx-yyy-zzz" or "rstd.io/foofy".
 #'       The instructor must then arrange for the shortlink to point to a valid
 #'       download URL for the target ZIP file. The helper
@@ -443,7 +443,7 @@ modify_drive_url <- function(url) {
     return(hopeless_url(url))
   }
   id <- gsub("/d/|/folders/|id=", "", regmatches(url, id_loc))
-  glue("https://drive.google.com/uc?export=download&id={id}")
+  glue_chr("https://drive.google.com/uc?export=download&id={id}")
 }
 
 modify_dropbox_url <- function(url) {
@@ -458,7 +458,7 @@ modify_github_url <- function(url) {
   # but then, in big workshop settings, we might see rate limit problems or
   # get blocked because of too many token-free requests from same IP
   parsed <- parse_github_remotes(url)
-  glue_data(parsed, "{protocol}://{host}/{repo_owner}/{repo_name}/zipball/HEAD")
+  glue_data_chr(parsed, "{protocol}://{host}/{repo_owner}/{repo_name}/zipball/HEAD")
 }
 
 hopeless_url <- function(url) {
@@ -495,7 +495,7 @@ is_shortlink <- function(url) {
 expand_github <- function(url) {
   # mostly to handle errors in the spec
   repo_spec <- parse_repo_spec(url)
-  glue_data(repo_spec, "github.com/{owner}/{repo}/zipball/HEAD")
+  glue_data_chr(repo_spec, "github.com/{owner}/{repo}/zipball/HEAD")
 }
 
 conspicuous_place <- function() {
@@ -600,7 +600,7 @@ progress_fun <- function(down, up) {
 make_filename <- function(cd,
                           fallback = path_file(file_temp())) {
   ## TO DO(jennybc): the element named 'filename*' is preferred but I'm not
-  ## sure how to parse it yet, so targetting 'filename' for now
+  ## sure how to parse it yet, so targeting 'filename' for now
   ## https://tools.ietf.org/html/rfc6266
   cd <- cd[["filename"]]
   if (is.null(cd) || is.na(cd)) {

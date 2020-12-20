@@ -33,7 +33,7 @@ pr_sync <- function() {
     Sync a PR with:
       * {ui_code('pr_pull()')}
       * {ui_code('pr_merge_main()')}
-      * {ui_code('pr_pull()')}")
+      * {ui_code('pr_push()')}")
   lifecycle::deprecate_stop(
     when = "2.0.0",
     what = "pr_sync()",
@@ -113,7 +113,7 @@ deprecate_warn_credentials <- function(whos_asking, details = NULL) {
 #'
 #' If you have credential problems, focus your troubleshooting on getting the
 #' credentials package to find your credentials. The [introductory
-#' vignette](https://cran.r-project.org/web/packages/credentials/vignettes/intro.html)
+#' vignette](https://docs.ropensci.org/credentials/articles/intro.html)
 #' is a good place to start.
 #'
 #' If you use the HTTPS protocol (which we recommend), a GitHub personal access

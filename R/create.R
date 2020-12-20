@@ -113,9 +113,10 @@ create_project <- function(path,
 #' [pr_init()], one of several [functions that work pull
 #' requests][pull-requests].
 #'
-#' `create_from_github()` works best when we can find a GitHub personal access
-#' token in the Git credential store (just like many other usethis functions).
-#' See [gh_token_help()] for more advice.
+#' `create_from_github()` works best when your GitHub credentials are
+#' discoverable. See below for more about authentication.
+#'
+#' @template double-auth
 #'
 #' @seealso
 #' * [use_github()] to go the opposite direction, i.e. create a GitHub repo
@@ -123,8 +124,6 @@ create_project <- function(path,
 #' * [git_protocol()] for background on `protocol` (HTTPS vs SSH)
 #' * [use_course()] to download a snapshot of all files in a GitHub repo,
 #'   without the need for any local or remote Git operations
-#'
-#' @template double-auth
 #'
 #' @inheritParams create_package
 #' @param repo_spec A string identifying the GitHub repo in one of these forms:
@@ -193,11 +192,7 @@ create_from_github <- function(repo_spec,
   whoami <- suppressMessages(gh::gh_whoami(.api_url = host))
   no_auth <- is.null(whoami)
   user <- if (no_auth) NULL else whoami$login
-  if (is.null(host)) {
-    code_hint <- "gh_token_help()"
-  } else {
-    code_hint <- glue('gh_token_help("{host}")')
-  }
+  hint <- code_hint_with_host("gh_token_help", host)
 
   if (no_auth && is.na(fork)) {
     ui_stop("
@@ -207,7 +202,7 @@ create_from_github <- function(repo_spec,
 
       You have two choices:
       1. Make your token available (if in doubt, DO THIS):
-         - Call {ui_code(code_hint)} for directions
+         - Call {ui_code(hint)} for directions
       2. Call {ui_code('create_from_github()')} again, but with \\
       {ui_code('fork = FALSE')}
          - Only do this if you are absolutely sure you don't want to fork
@@ -219,7 +214,7 @@ create_from_github <- function(repo_spec,
       Unable to discover a GitHub personal access token
       A token is required in order to fork {ui_value(repo_spec)}
 
-      Call {ui_code(code_hint)} for help configuring a token")
+      Call {ui_code(hint)} for help configuring a token")
   }
   # one of these is true:
   # - gh is discovering a token for `host`
@@ -227,7 +222,7 @@ create_from_github <- function(repo_spec,
 
   source_owner <- spec_owner(repo_spec)
   repo_name <- spec_repo(repo_spec)
-  gh <- gh_tr(list(owner = source_owner, repo = repo_name, .api_url = host))
+  gh <- gh_tr(list(repo_owner = source_owner, repo_name = repo_name, .api_url = host))
 
   repo_info <- gh("GET /repos/{owner}/{repo}")
   # 2020-10-14 GitHub has had some bugs lately around default branch
@@ -295,14 +290,14 @@ create_from_github <- function(repo_spec,
     gert::git_config_set(config_key, "usethis::create_from_github", repo = git_repo())
   }
 
-  rstudio <- rstudio %||% rstudioapi::isAvailable()
+  rstudio <- rstudio %||% rstudio_available()
   rstudio <- rstudio && !is_rstudio_project(proj_get())
   if (rstudio) {
     use_rstudio()
   }
 
   if (open) {
-    if (proj_activate(repo_path)) {
+    if (proj_activate(proj_get())) {
       # Working directory/active project changed; so don't undo on exit
       withr::deferred_clear()
     }
