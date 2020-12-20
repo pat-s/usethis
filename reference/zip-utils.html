@@ -100,7 +100,7 @@ use_course_details." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">usethis</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.9.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.0.0.9000</span>
       </span>
     </div>
 
@@ -108,7 +108,7 @@ use_course_details." />
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fa fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -126,6 +126,9 @@ use_course_details." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
+      <a href="../articles/articles/git-credentials.html">Managing Git(Hub) Credentials</a>
+    </li>
+    <li>
       <a href="../articles/articles/pr-functions.html">Pull request helpers</a>
     </li>
   </ul>
@@ -138,6 +141,9 @@ use_course_details." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li class="dropdown-header">Blog posts</li>
+    <li>
+      <a href="https://www.tidyverse.org/blog/2020/12/usethis-2-0-0/">usethis 2.0.0</a>
+    </li>
     <li>
       <a href="https://www.tidyverse.org/blog/2020/04/usethis-1-6-0/">usethis 1.6.0</a>
     </li>
@@ -160,7 +166,7 @@ use_course_details." />
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/r-lib/usethis/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -211,7 +217,7 @@ actually be able to find them. The underlying helpers are documented in
       <th>url</th>
       <td><p>Link to a ZIP file containing the materials. To reduce the chance
 of typos in live settings, these shorter forms are accepted:</p><pre>* GitHub repo spec: "OWNER/REPO". Equivalent to
-  `https://github.com/r-lib/OWNER/REPO/DEFAULT_BRANCH.zip`.
+  `https://github.com/OWNER/REPO/DEFAULT_BRANCH.zip`.
 * bit.ly or rstd.io shortlinks: "bit.ly/xxx-yyy-zzz" or "rstd.io/foofy".
   The instructor must then arrange for the shortlink to point to a valid
   download URL for the target ZIP file. The helper

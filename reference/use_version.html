@@ -55,7 +55,7 @@
 <meta property="og:title" content="Increment package version — use_version" />
 <meta property="og:description" content="use_version() increments the &quot;Version&quot; field in DESCRIPTION,
 adds a new heading to NEWS.md (if it exists), and commits those changes
-(if package uses Git).
+(if package uses Git). It makes the same update to a line like PKG_version = &quot;x.y.z&quot;; in src/version.c (if it exists).
 use_dev_version() increments to a development version, e.g.
 from 1.0.0 to 1.0.0.9000. If the existing version is already a development
 version with four components, it does nothing. Thin wrapper around
@@ -102,7 +102,7 @@ use_version()." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">usethis</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.9.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.0.0.9000</span>
       </span>
     </div>
 
@@ -110,7 +110,7 @@ use_version()." />
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fa fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -128,6 +128,9 @@ use_version()." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
+      <a href="../articles/articles/git-credentials.html">Managing Git(Hub) Credentials</a>
+    </li>
+    <li>
       <a href="../articles/articles/pr-functions.html">Pull request helpers</a>
     </li>
   </ul>
@@ -140,6 +143,9 @@ use_version()." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li class="dropdown-header">Blog posts</li>
+    <li>
+      <a href="https://www.tidyverse.org/blog/2020/12/usethis-2-0-0/">usethis 2.0.0</a>
+    </li>
     <li>
       <a href="https://www.tidyverse.org/blog/2020/04/usethis-1-6-0/">usethis 1.6.0</a>
     </li>
@@ -162,7 +168,7 @@ use_version()." />
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/r-lib/usethis/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -193,7 +199,7 @@ use_version()." />
     <div class="ref-description">
     <p><code>use_version()</code> increments the "Version" field in <code>DESCRIPTION</code>,
 adds a new heading to <code>NEWS.md</code> (if it exists), and commits those changes
-(if package uses Git).</p>
+(if package uses Git). It makes the same update to a line like <code>PKG_version = "x.y.z";</code> in <code>src/version.c</code> (if it exists).</p>
 <p><code>use_dev_version()</code> increments to a development version, e.g.
 from 1.0.0 to 1.0.0.9000. If the existing version is already a development
 version with four components, it does nothing. Thin wrapper around
